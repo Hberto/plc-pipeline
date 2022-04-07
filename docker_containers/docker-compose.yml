@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  mqtt_broker:
+    image: eclipse-mosquitto:5.0
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    container_name: mqtt_broker
+    volumes:
+      - ./docker_containers/mqtt_broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./docker_containers/mqtt_broker/data/:/mosquitto/data/
+      - ./docker_containers/mqtt_broker/log/:/mosquitto/log/
+    networks:
+      plc_pipeline_network:
+        ipv4_address: 192.168.200.22
