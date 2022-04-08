@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Mosquitto volume data
+docker_containers/mqtt_broker/data/*
+docker_containers/mqtt_broker/log/*
