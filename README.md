@@ -11,3 +11,4 @@ The Use-Case for the application is predictive and preventive analysis and maint
 The goal is to build a data pipeline for plcs. It must be able to collect and analyze a large amount of data, such as alarms, inputs and outputs from industrial PLCs for example in power generation and power distribution systems. Since not all architecture goals can be achieved, the focus for the system architecture is on scalability and robustness.
 
 # Architecture
+![Architecture](BA-GrobArchitektur.drawio.png)
