@@ -12,3 +12,7 @@ The goal is to build a data pipeline for plcs. It must be able to collect and an
 
 # Architecture
 ![Architecture](BA-GrobArchitektur.drawio.png)
+
+# ToDo's
+- Add more Diagramms of architecture
+- update readMe
