@@ -36,7 +36,6 @@ public class Simple_Pipeline {
 
         try (PlcConnection con = driverManager.getConnection("s7://192.168.0.1")){
             log.info("Test: Connection success");
-
             CompletableFuture<? extends PlcReadResponse> reqFuture = con.readRequestBuilder()
                     .addItem("test","%I0.0:BOOL")
                     .build()
@@ -54,7 +53,7 @@ public class Simple_Pipeline {
             log.error("Test: No Connection");
         }
 
-
+        //ToDo: Integrate kafka producer and connect
 
 
     }
