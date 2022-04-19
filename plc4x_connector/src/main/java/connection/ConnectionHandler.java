@@ -3,6 +3,7 @@ package connection;
 import org.apache.plc4x.java.*;
 import org.apache.plc4x.java.api.PlcConnection;
 import org.apache.plc4x.java.api.exceptions.PlcConnectionException;
+import org.apache.plc4x.java.utils.connectionpool.PooledPlcDriverManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,52 +14,47 @@ import org.slf4j.LoggerFactory;
  *
  * @author Herberto Werner
  */
-public class ConnectionHandlerSimple implements IConnector {
+public class ConnectionHandler implements IConnector {
 
     //Constants
-    private static final Logger log = LoggerFactory.getLogger(ConnectionHandlerSimple.class);
+    private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
     //Fields
     private String adr;
     private int numConnections;
     private PlcDriverManager driverManager;
+    private PlcDriverManager driverManagerPool;
 
     /**
      * Constructor of the ConnectionHandlerSimple.
      * @param adr address of the driver.
      * @param driverManager driverManager for the connection.
      */
-    public ConnectionHandlerSimple(String adr, PlcDriverManager driverManager){
+    public ConnectionHandler(String adr, PlcDriverManager driverManager){
         this.adr = adr;
         this.driverManager = driverManager;
     }
 
     /**
-     * Constructor of the ConnectionHandlerSimple without DriverManager.
+     * Constructor of the ConnectionHandlerSimple with a PoolDriverManager.
      * @param adr address of the driver.
      */
-    public ConnectionHandlerSimple(String adr) {
+    public ConnectionHandler(String adr, PooledPlcDriverManager driverManagerPool) {
         this.adr = adr;
-        driverManager = new PlcDriverManager();
+        this.driverManagerPool = driverManagerPool;
     }
 
-    /**
-     * Constructor of the ConnectionHandlerSimple without DriverManager.
-     */
-    public ConnectionHandlerSimple() {
-        driverManager = new PlcDriverManager();
-    }
 
     @Override
-    public PlcConnection connect(int numberOfConnections) throws PlcConnectionException {
+    public PlcConnection connect(boolean simple) throws PlcConnectionException {
+        PlcConnection con;
 
-        if (numberOfConnections < 0 ) {
-            log.error("Negative not allowed");
-            throw new IllegalArgumentException("Cannot be negative");
+        if(simple) {
+            con = driverManager.getConnection(adr);
         }
-
-        PlcConnection con = driverManager.getConnection(adr);
+        else {
+            con = driverManagerPool.getConnection(adr);
+        }
         numConnections++;
-
         return con;
     }
 
@@ -108,5 +104,21 @@ public class ConnectionHandlerSimple implements IConnector {
      */
     public void setDriverManager(PlcDriverManager driverManager) {
         this.driverManager = driverManager;
+    }
+
+    /**
+     * Returns the PLCDriverManagerPool
+     * @return PLCDriverManagerPool.
+     */
+    public PooledPlcDriverManager getDriverManagerPool() {
+        return (PooledPlcDriverManager) driverManagerPool;
+    }
+
+    /**
+     * Sets the PLCDriverManagerPool
+     * @return PLCDriverManagerPool.
+     */
+    public void setDriverManagerPool(PooledPlcDriverManager driverManagerPool) {
+        this.driverManagerPool = driverManagerPool;
     }
 }
