@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * This class presents Read Operations of a device or protocol.
- * The Operations could be adapted on a single field or multiple fields.
+ * This class represents a wrapper for read operations of a device or protocol using the plc4x api data wrapper.
+ * It's possible to read data from a single field or multiple fields of the device or protocol.
  * Attention: First Version of Read Operations
  *
  * @author Herberto Werner
