@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    networks:
+      - plc_pipeline_network
+  kafka:
+    image: 'bitnami/kafka:latest'
+    networks:
+      - plc_pipeline_network
+
+networks:
+  plc_pipeline_network:
+    name: plc_pipeline_network
