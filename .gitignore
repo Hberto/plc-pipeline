@@ -156,5 +156,8 @@ modules.xml
 # Sonarlint plugin
 .idea/sonarlint
 
+# plc4x_connector
+plc4x_connector/*
+
 
 
