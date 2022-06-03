@@ -1,4 +1,4 @@
-package readOperations;
+package ReadOperations;
 
 import org.apache.plc4x.java.api.PlcConnection;
 import org.apache.plc4x.java.api.messages.PlcReadRequest;
