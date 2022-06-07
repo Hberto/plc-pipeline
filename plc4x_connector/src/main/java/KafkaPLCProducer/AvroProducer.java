@@ -24,7 +24,7 @@ public class AvroProducer {
     private static final Logger log = LoggerFactory.getLogger(ReadOperation.class);
 
 
-    public static void runProducer( PLCData data) {
+    public void runProducer( PLCData data) {
         Producer<Long, PLCData> producer = createProducer();
 
         try{
@@ -65,7 +65,7 @@ public class AvroProducer {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         properties.put(ProducerConfig.CLIENT_ID_CONFIG, CLIENT_ID);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, AvroSerializer.class.getName());
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, AvroSerializerGeneric.class.getName());
 
         return new KafkaProducer<>(properties);
     }

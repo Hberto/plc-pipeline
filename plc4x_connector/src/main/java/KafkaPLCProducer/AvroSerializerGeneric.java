@@ -27,9 +27,11 @@ public class AvroSerializer<T extends SpecificRecordBase> implements Serializer<
             byte[] result = null;
 
             if (data != null) {
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); //Byte Array for the encoder
+                // Serialize directly to a byte array, any type are allowed since its generic
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 BinaryEncoder binaryEncoder = EncoderFactory.get().binaryEncoder(byteArrayOutputStream, null);
 
+                //Not a specific class needed
                 DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(data.getSchema());
                 datumWriter.write(data, binaryEncoder);
 
