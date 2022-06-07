@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
-public class AvroSerializer<T extends SpecificRecordBase> implements Serializer<T> {
+public class AvroSerializerGeneric<T extends SpecificRecordBase> implements Serializer<T> {
 
 
     @Override
