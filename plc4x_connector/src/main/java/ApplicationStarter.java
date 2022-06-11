@@ -7,7 +7,7 @@ import KafkaPLCProducer.AvroProducer;
 import KafkaPLCProducer.producer.PLCData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import testPipeline.Simple_Pipeline;
+
 
 /**
  * This class is the main entry of the plc4x connector application
@@ -20,7 +20,7 @@ import testPipeline.Simple_Pipeline;
 
 public class ApplicationStarter {
 
-    private static final Logger log = LoggerFactory.getLogger(Simple_Pipeline.class);
+    private static final Logger log = LoggerFactory.getLogger(ApplicationStarter.class);
     private static final int TRYOUTS = 10;
     //ToDo: Integrate PLC4X
 
@@ -28,20 +28,25 @@ public class ApplicationStarter {
     public static void main(String[] args) {
 
         PLCData plcdata = PLCData.newBuilder()
-                .setData(345345)
+                .setData(345345L)
                 .setSenderName("teste")
                 .setDataType("Long")
-                .setOrderNr(12001)
+                .setOrderNr(12001L)
                 .setOperation("Read")
                 .build();
+
 
         log.info("Starting Application Starter.......");
         AvroProducer avroProducer = new AvroProducer();
         log.info("Sending Message.......");
+        avroProducer.runProducer(plcdata);
+        log.info("+++++++++++++++++DONE++++++++++++++++");
+        /**
         for(int i = 0; i < TRYOUTS; i++) {
             avroProducer.runProducer(plcdata);
             log.info("Message SENT.......");
         }
+         **/
 
     }
 
