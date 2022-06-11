@@ -2,7 +2,7 @@ version: '3'
 
 services:
   zookeeper:
-    image: 'bitnami/zookeeper:latest'
+    image: "bitnami/zookeeper:latest"
     container_name: zookeeper1
     hostname: zookeeper1
     restart: unless-stopped
@@ -11,10 +11,10 @@ services:
     networks:
       - plc_pipeline_network
     environment:
-      - ALLOW_ANONYMOUS_LOGIN: yes
+      ALLOW_ANONYMOUS_LOGIN: "yes"
   
   kafdrop:
-    image: 'obsidiandynamics/kafdrop'
+    image: "obsidiandynamics/kafdrop"
     container_name: kafdrop
     hostname: kafdrop
     restart: unless-stopped
@@ -23,28 +23,29 @@ services:
     networks:
       - plc_pipeline_network
     environment:
-        KAFKA_BROKERCONNECT: "kafka1:9092"
+        KAFKA_BROKERCONNECT: "kafka:9092"
         JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
 
   kafka:
-    image: 'bitnami/kafka:latest'
-    container_name: kafka1
-    hostname: kafka1
-    restart: unless-stopped
+    image: "bitnami/kafka:latest"
+    container_name: kafka
     ports:
-      - 9092:9092
+      - "9092:9092" #Internal
+      - "29092:29092" #External Same Host
     environment:
-      - KAFKA_BROKER_ID: 1
-      # Listener is on the same Host-Machine -> ToDo: Change if different Machines
-      - KAFKA_CFG_LISTENERS: INTERNAL://:9092
-      #- KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka1:9092
-      - KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper1:2181
-      - KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_LISTENERS: "INTERNAL://:9092,EXTERNAL://:29092"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:29092"
+      KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper1:2181"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
     networks:
       - plc_pipeline_network
-# ADD Kafka-Connect here of PLC4X with Confluent Container
 
 networks:
   plc_pipeline_network:
