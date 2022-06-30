@@ -3,7 +3,7 @@ version: '3'
 services:
   spark-master:
     image: docker.io/bitnami/spark:3
-    hostname: "spark_master"
+    #hostname: "spark_master"
     container_name: "spark_master"
     environment:
       SPARK_MODE: "master"
@@ -19,13 +19,13 @@ services:
 
   spark-worker:
     image: docker.io/bitnami/spark:3
-    hostname: "worker1"
+    #hostname: "localhost"
     container_name: "worker1"
     environment:
       SPARK_MODE: "worker"
       SPARK_MASTER_URL: "spark://spark-master:7077"
-      SPARK_WORKER_MEMORY: "1G"
-      SPARK_WORKER_CORES: "1"
+      SPARK_WORKER_MEMORY: "4G"
+      SPARK_WORKER_CORES: "2"
       SPARK_RPC_AUTHENTICATION_ENABLED: "no"
       SPARK_RPC_ENCRYPTION_ENABLED: "no"
       SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
