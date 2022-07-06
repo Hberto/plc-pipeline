@@ -172,9 +172,12 @@ modules.xml
 
 # plc4x_connector
 #src/plc4x_connector/.idea/**
-*/src/plc4x_connector/.idea/misc.xml
-*/src/plc4x_connector/.idea/runConfigurations.xml
+/src/plc4x_connector/.idea/misc.xml
+/src/plc4x_connector/.idea/runConfigurations.xml
 
 # spark connector
-*/src/spark/.idea/misc.xml
+**/src/spark/.idea/misc.xml
+src/plc4x_connector/.idea/misc.xml
+src/plc4x_connector/.idea/runConfigurations.xml
+src/spark/testSimple/__pycache__/simplestream.cpython-38.pyc
 
