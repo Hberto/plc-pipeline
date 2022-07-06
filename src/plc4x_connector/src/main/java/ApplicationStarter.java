@@ -3,8 +3,9 @@
 //ToDo: start the application here
 //ToDo: connector to kafka connect
 
-import KafkaPLCProducer.AvroProducer;
-import KafkaPLCProducer.producer.PLCData;
+import KafkaPLCProducer.Avro.AvroProducer;
+import KafkaPLCProducer.JSON.JSONProducer;
+import KafkaPLCProducer.producerData.PLCData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +39,12 @@ public class ApplicationStarter {
 
         log.info("Starting Application Starter.......");
         AvroProducer avroProducer = new AvroProducer();
+        JSONProducer jsonProducer = new JSONProducer();
         log.info("Sending Message.......");
-        avroProducer.runProducer(plcdata);
+        //avroProducer.runProducer(plcdata);
+        //avroProducer.runProducerSimple("Hey it worked");
+        jsonProducer.runProducer();
         log.info("+++++++++++++++++DONE++++++++++++++++");
-        /**
-        for(int i = 0; i < TRYOUTS; i++) {
-            avroProducer.runProducer(plcdata);
-            log.info("Message SENT.......");
-        }
-         **/
 
     }
 
