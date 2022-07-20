@@ -5,8 +5,8 @@ import os
 appName = "Testing the Stream with Kafka"
 
 # Set spark environments
-os.environ['PYSPARK_PYTHON'] = '/usr/bin/python3'
-os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/bin/python3'
+#os.environ['PYSPARK_PYTHON'] = '/usr/bin/python3'
+#os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/bin/python3'
 
 def update_spark_log_level(spark):
     spark.sparkContext.setLogLevel('error')
