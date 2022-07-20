@@ -16,6 +16,9 @@ services:
       - "8080:8080"
     networks:
       - plc_pipeline_network
+    volumes:
+      - /home/herberto/Schreibtisch/BA/plc-pipeline/src/plc4x_connector/src/resources/json/plcdata.json:/jsonSchema/plcdata.json
+
 
   spark-worker:
     image: docker.io/bitnami/spark:3
@@ -36,6 +39,8 @@ services:
       - "spark-master"
     networks:
       - plc_pipeline_network
+    volumes:
+      - /home/herberto/Schreibtisch/BA/plc-pipeline/src/plc4x_connector/src/resources/json/plcdata.json:/jsonSchema/plcdata.json
 
 networks:
   plc_pipeline_network:

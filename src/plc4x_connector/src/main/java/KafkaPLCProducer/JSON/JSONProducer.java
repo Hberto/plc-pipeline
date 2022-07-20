@@ -17,7 +17,6 @@ import java.util.Properties;
 
 public class JSONProducer {
     //Configs for Kafka
-    public final static String TOPIC = "plcDataTest2";
     public final static String TOPIC_SIMPLE = "plcDataString";
     public final static String BOOTSTRAP_SERVERS = "localhost:29092";
     public final static String CLIENT_ID = "testAuftrag";

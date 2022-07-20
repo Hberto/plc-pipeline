@@ -1,16 +1,89 @@
 version: '3'
 
 services:
-  mqtt_broker:
-    image: eclipse-mosquitto:5.0
+  zookeeper:
+    image: "bitnami/zookeeper:latest"
+    container_name: zookeeper1
+    hostname: zookeeper1
+    restart: unless-stopped
     ports:
-      - "1883:1883"
-      - "9001:9001"
-    container_name: mqtt_broker
+      - '2181:2181'
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+  
+  kafdrop:
+    image: "obsidiandynamics/kafdrop"
+    container_name: kafdrop
+    hostname: kafdrop
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+        KAFKA_BROKERCONNECT: "kafka:9092"
+        JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+
+  kafka:
+    image: "bitnami/kafka:latest"
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "29092:29092" #External Same Host
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_LISTENERS: "INTERNAL://:9092,EXTERNAL://0.0.0.0:29092"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:29092"
+      KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper1:2181"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  spark-master:
+    image: docker.io/bitnami/spark:3
+    hostname: "spark_master"
+    container_name: "spark_master"
+    environment:
+      SPARK_MODE: "master"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+
+  spark-worker:
+    image: docker.io/bitnami/spark:3
+    hostname: "worker1"
+    container_name: "worker1"
+    environment:
+      SPARK_MODE: "worker"
+      SPARK_MASTER_URL: "spark://spark-master:7077"
+      SPARK_WORKER_MEMORY: "4G"
+      SPARK_WORKER_CORES: "2"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - "spark-master"
+
+  pyspark-executor:
+    build:
+      context: .
+      dockerfile: Dockerfile    
+    container_name: executor
     volumes:
-      - ./docker_containers/mqtt_broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./docker_containers/mqtt_broker/data/:/mosquitto/data/
-      - ./docker_containers/mqtt_broker/log/:/mosquitto/log/
-    networks:
-      plc_pipeline_network:
-        ipv4_address: 192.168.200.22
+      - /home/herberto/Schreibtisch/BA/plc-pipeline/src/spark/testSimple/simplestream.py:/scripts/simplestream.py
+#       - /home/herberto/Schreibtisch/mystream.py:/scripts/mystream.py
+
+# kafka: 172.18.0.5
+# spark_worker: 172.18.0.6
+# zookeeper: 172.18.0.2
+# kafdrop: 172.18.0.3
+# spark_master: 172.18.0.4 

@@ -5,6 +5,7 @@
 
 import KafkaPLCProducer.Avro.AvroProducer;
 import KafkaPLCProducer.JSON.JSONProducer;
+import KafkaPLCProducer.StringFormat.StringProducer;
 import KafkaPLCProducer.producerData.PLCData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,12 @@ public class ApplicationStarter {
         log.info("Starting Application Starter.......");
         AvroProducer avroProducer = new AvroProducer();
         JSONProducer jsonProducer = new JSONProducer();
+        StringProducer stringProducer = new StringProducer();
         log.info("Sending Message.......");
         //avroProducer.runProducer(plcdata);
         //avroProducer.runProducerSimple("Hey it worked");
         jsonProducer.runProducer();
+        //stringProducer.runProducerString();
         log.info("+++++++++++++++++DONE++++++++++++++++");
 
     }
