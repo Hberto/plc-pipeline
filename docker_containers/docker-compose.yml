@@ -1,16 +1,19 @@
 version: '3'
 
 services:
+
+# Setting up Zookeper
   zookeeper:
     image: "bitnami/zookeeper:latest"
     container_name: zookeeper1
     hostname: zookeeper1
     restart: unless-stopped
     ports:
-      - '2181:2181'
+      - "2181:2181"
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
-  
+
+# Setting up Kafdrop to monitor Kafka
   kafdrop:
     image: "obsidiandynamics/kafdrop"
     container_name: kafdrop
@@ -22,6 +25,7 @@ services:
         KAFKA_BROKERCONNECT: "kafka:9092"
         JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
 
+# Setting up Kafka as Messege Queue
   kafka:
     image: "bitnami/kafka:latest"
     container_name: kafka
@@ -41,9 +45,9 @@ services:
     depends_on:
       - zookeeper
 
+# Setting up Spark Master
   spark-master:
     image: docker.io/bitnami/spark:3
-    hostname: "spark_master"
     container_name: "spark_master"
     environment:
       SPARK_MODE: "master"
@@ -55,6 +59,7 @@ services:
       - "7077:7077"
       - "8080:8080"
 
+  # Setting up Spark Worker to process jobs
   spark-worker:
     image: docker.io/bitnami/spark:3
     hostname: "worker1"
@@ -73,6 +78,7 @@ services:
     depends_on:
       - "spark-master"
 
+  # Running my python script to process my data from kafka in pyspark
   pyspark-executor:
     build:
       context: .
@@ -80,10 +86,44 @@ services:
     container_name: executor
     volumes:
       - /home/herberto/Schreibtisch/BA/plc-pipeline/src/spark/testSimple/simplestream.py:/scripts/simplestream.py
-#       - /home/herberto/Schreibtisch/mystream.py:/scripts/mystream.py
+  
+  # Setting up MongoDB
+  mongodb:
+    image: mongo
+    container_name: "mongodb"
+    restart: "unless-stopped"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
 
-# kafka: 172.18.0.5
-# spark_worker: 172.18.0.6
-# zookeeper: 172.18.0.2
-# kafdrop: 172.18.0.3
-# spark_master: 172.18.0.4 
+  # Setting up Mongo-Express as Monitoring tool for MongoDB
+  #mongo-express:
+  #  image: mongo-express:0.54.0
+  #  container_name: "mongoexpress"
+  #  restart: "unless-stopped"
+  #  ports:
+  #    - "28081:28081"
+  #  environment:
+  #    ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #    ME_CONFIG_MONGODB_ADMINPASSWORD: example
+# #     ME_CONFIG_MONGODB_URL: "mongodb://root:example@mongo:27017/"
+  #    ME_CONFIG_MONGODB_SERVER: "mongodb"
+  #  depends_on:
+  #    - "mongodb"
+  
+  # Setting up Grafana as Monitoring tool of Data
+  grafana:
+    image: grafana/grafana:8.2.2
+    container_name: grafana
+    hostname: grafana
+    ports:
+      - "3000:3000"
+    environment: 
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+#      GF_INSTALL_PLUGINS:
