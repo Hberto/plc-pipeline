@@ -45,8 +45,8 @@ public class ApplicationStarter {
         log.info("Sending Message.......");
         //avroProducer.runProducer(plcdata);
         //avroProducer.runProducerSimple("Hey it worked");
-        jsonProducer.runProducer();
-        //stringProducer.runProducerString();
+        //jsonProducer.runProducer();
+        stringProducer.runProducerString();
         log.info("+++++++++++++++++DONE++++++++++++++++");
 
     }
