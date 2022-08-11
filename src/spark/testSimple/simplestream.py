@@ -1,15 +1,15 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 import json
-import os
+
 # Kafka Parameters and Configs
 appNameKafka = "Testing the Stream with Kafka"
 
-#Mongo Parameters and and Config
-appNameMongoDB = "Testing the Connection to MongoDB"
-input_uri = "mongodb://root:example@mongodb:27017"
-output_uri = "mongodb://root:example@mongodb:27017"
-
+# Cassandra TEMP
+#        .config("spark.sql.extensions", "com.datastax.spark.connector.CassandraSparkExtensions") \
+#        .config("spark.sql.catalog.casscatalog","com.datastax.spark.connector.datasource.CassandraCatalog") \
+# com.datastax.spark:spark-cassandra-connector_2.12:3.0.0
+# .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0,com.datastax.spark:spark-cassandra-connector-assembly_2.12:3.2.0") \
 
 def update_spark_log_level(spark):
     spark.sparkContext.setLogLevel('error')
@@ -17,44 +17,43 @@ def update_spark_log_level(spark):
     logger = log4j.LogManager.getLogger("my logger")
     return logger
 
-
+def writeToCassandra(writeDF, _):
+    writeDF.write \
+        .format("org.apache.spark.sql.cassandra")\
+        .mode('append')\
+        .options(table="strings", keyspace="test")\
+        .save()
 
 def stream_testing():
     # create Spark Session for Kafka
     spark: SparkSession = SparkSession \
         .builder \
         .master("spark://spark-master:7077") \
-        .config("spark.mongodb.input.uri", input_uri) \
-        .config("spark.mongodb.output.uri", output_uri) \
-        .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2,org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
+        .config("spark.cassandra.connection.host","cassandra")\
+        .config("spark.cassandra.connection.port","9042")\
+        .config("spark.cassandra.auth.username","cassandra")\
+        .config("spark.cassandra.auth.password","cassandra")\
+        .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0,com.datastax.spark:spark-cassandra-connector_2.12:3.0.0") \
         .appName(appNameKafka) \
         .getOrCreate()
     logger = update_spark_log_level(spark)
     sc = spark.sparkContext
 
-    # create Spark Session for MongoDB
- #   spark_mongo: SparkSession = SparkSession \
- #       .builder \
- #       .appName(appNameMongoDB) \
- #       .config("spark.mongodb.input.uri", input_uri) \
- #       .config("spark.mongodb.output.uri", output_uri) \
- #       .config("spark.jars.packages","org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
- #       .getOrCreate()
 
     logger.info("++++++Printing Schema++++++")
     # load schema
-    json_schema = {
-        "orderNr": "12006000",
-        "senderName": "S7-1200",
-        "operation": "Read",
-        "dataType": "Boolean",
-        "data": "true"
-    }
-    json_str = json.dumps(json_schema)
-
-    rdd_json = sc.parallelize([json_str])
-    df = spark.read.json(rdd_json)
-    df.show()
+    #json_schema = {
+    #    "orderNr": "12006000",
+    #    "senderName": "S7-1200",
+    #    "operation": "Read",
+    #    "dataType": "Boolean",
+    #    "data": "true"
+    #}
+    #json_str = json.dumps(json_schema)
+#
+    #rdd_json = sc.parallelize([json_str])
+    #df = spark.read.json(rdd_json)
+    #df.show()
 
     ###############################
 
@@ -88,54 +87,39 @@ def stream_testing():
     # df1.printSchema()
     # df1.writeStream.format("console").outputMode("update").option("truncate", False).start().awaitTermination()
 
-    
-    # mongodb write example
-    print("+++++++++++MongoDB write Example+++++++++++")
-    people = spark.createDataFrame([("Bilbo Baggins",  50), ("Gandalf", 1000), ("Thorin", 195), ("Balin", 178), ("Kili", 77),
-   ("Dwalin", 169), ("Oin", 167), ("Gloin", 158), ("Fili", 82), ("Bombur", None)], ["name", "age"])
+    testData= [(1,1),(2,2)]
 
-    people.write \
-    .format("com.mongodb.spark.sql.DefaultSource") \
-    .mode("append") \
-    .option("uri", output_uri)\
-    .option("database", "test")\
-    .option("collection", "collectionTest")\
-    .save()
+    # cassandra write example
+    testSchema= StructType([
+                StructField("sensor_id",IntegerType(),False),
+                StructField("temperature",IntegerType(),False)])
 
-    people.show()
-    people.printSchema()
+    df1 = spark.createDataFrame(data=testData,schema=testSchema)
+    df1.printSchema()
+    df1.show(truncate=False)
 
-    # mongodb read example
-    logger.info("++++++MongoDB read Example++++++")
-    dfMongoExample = spark.read \
-    .format("com.mongodb.spark.sql.DefaultSource") \
-    .option("uri", input_uri)\
-    .option("database", "test")\
-    .option("collection", "collectionTest")\
-    .load()
+    print("##########TESTING Cassandra############")
+#    df1.write \
+#        .format("org.apache.spark.sql.cassandra")\
+#        .mode('append')\
+#        .options(table="strings", keyspace="test")\
+#        .save()
 
-    dfMongoExample.filter(dfMongoExample["age"] >= 150).show()
+ #   df1.writeStream \
+ #       .foreachBatch(writeToCassandra) \
+ #       .outputMode("update") \
+ #       .start()\
+ #       .awaitTermination()
+ #   df1.show()
+    query = df1.write \
+        .mode("append") \
+        .format("org.apache.spark.sql.cassandra") \
+        .options(table="test", keyspace="test") \
+        .save()
 
-
-
-    # Alternative Dataframe with jsonSchema
-    # Struct type oder Map Type 
-    # plc_df = df.selectExpr("CAST(value AS STRING)")
-    # plc_data = plc_df.select(from_json(col("value").cast("string"), schema)).alias("data").select("*")
-    # logger.info("++++++Printing from Kafka++++++")
-    # plc_data.writeStream.format("console").outputMode("append").start().awaitTermination()
-    # query = df.selectExpr("CAST(value AS STRING)") \
-    #    .writeStream \
-    #    .format("console") \
-    #    .start()
-    # query.awaitTermination()
-    
-    # ToDo: create Dataframe and reading Data from Kafka
-    # https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html#deploying
-    # ...express streaming aggregations, event-time windows, stream-to-batch joins
-
-    # ToDo: Monitor Streaming queries -
-    #  https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#monitoring-streaming-queries
+    # ToDo: Create right schemata for plc
+    # ToDo: create table like schema in cassandra
+    # ToDo: integrate timestamps
 
 
 ############APPLICATION START##########
