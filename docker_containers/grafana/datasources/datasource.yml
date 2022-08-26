@@ -1,0 +1,10 @@
+apiVersion: 1
+
+datasources:
+  - name: cassandra
+    type: Apache Cassandra
+    access: proxy
+    orgId: 1
+    url: http://cassandra:9042
+    isDefault: true
+    editable: false
