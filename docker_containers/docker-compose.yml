@@ -105,15 +105,10 @@ services:
     ports:
       - "3000:3000"
     environment: 
-#      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-#      GF_AUTH_ANONYMOUS_ENABLED: "true"
-#      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
-#      GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
-#      GF_AUTH_DISABLE_LOGIN_FORM: "true"
       GF_LOG_LEVEL: debug
-#      GF_INSTALL_PLUGINS: "hadesarchitect-cassandra-datasource"
-#    volumes:
-#      - ./grafana.db:/var/lib/grafana/grafana.db
+      GF_INSTALL_PLUGINS: "hadesarchitect-cassandra-datasource"
+    volumes:
+      - /home/herb/BA/plc-pipeline/docker_containers/grafana/data:/var/lib/grafana
 
   # Creating Tables and Keyspaces for Cassandra via SH Script
   plc-data-cassandra:
@@ -125,3 +120,7 @@ services:
     entrypoint: ["/plc_data_cassandra.sh"]
     volumes:
       - ./plc_data_cassandra.sh:/plc_data_cassandra.sh
+
+volumes:
+  grafana:
+    external: true
