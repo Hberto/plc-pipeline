@@ -188,3 +188,4 @@ BA/plc-pipeline/docker_containers/grafana/data/grafana.db
 **/data/grafana.db
 **/grafana/data/grafana.db
 /grafana/data/grafana.db
+docker_containers/grafana/data/grafana.db 
