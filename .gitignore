@@ -184,3 +184,5 @@ src/spark/testSimple/__pycache__/simplestream.cpython-38.pyc
 # grafana 
 /home/herb/BA/plc-pipeline/docker_containers/grafana/data/grafana.db
 **/grafana/data/grafana.db
+BA/plc-pipeline/docker_containers/grafana/data/grafana.db
+**/data/grafana.db
