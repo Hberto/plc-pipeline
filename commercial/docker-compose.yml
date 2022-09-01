@@ -2,7 +2,9 @@ version: '3'
 
 services:
   node-red:
-    image: nodered/node-red:latest-minimal
+    build:
+      context: /home/herb/BA/plc-pipeline/commercial/dashboard/
+      dockerfile: Dockerfile
     container_name: nodered
     environment:
       - TZ=Europe/Berlin
