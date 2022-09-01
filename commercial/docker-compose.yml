@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  node-red:
+    image: nodered/node-red:latest-minimal
+    container_name: nodered
+    environment:
+      - TZ=Europe/Berlin
+    ports:
+      - "1880:1880"
+    volumes:
+      - /home/herb/BA/plc-pipeline/dataStore/nodered:/data
+volumes:
+  node-red:
+    external: true
+
+    
