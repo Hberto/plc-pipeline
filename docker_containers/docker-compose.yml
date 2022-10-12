@@ -82,10 +82,8 @@ services:
   pyspark-executor:
     build:
       context: .
-      dockerfile: Dockerfile    
+      dockerfile: Dockerfile.pysparkexec    
     container_name: executor
-    volumes:
-      - /home/herb/BA/plc-pipeline/src/spark/testSimple/simplestream.py:/scripts/simplestream.py
   
   # Setting up Big Data Store Cassandra
   cassandra:
@@ -108,7 +106,7 @@ services:
       GF_LOG_LEVEL: debug
       GF_INSTALL_PLUGINS: "hadesarchitect-cassandra-datasource"
     volumes:
-      - /home/herb/BA/plc-pipeline/docker_containers/grafana/data:/var/lib/grafana
+#      - /home/herb/BA/plc-pipeline/docker_containers/grafana/data:/var/lib/grafana
       - /home/herb/BA/plc-pipeline/docker_containers/grafana/provisioning:/etc/grafana/provisioning/
 
   # Creating Tables and Keyspaces for Cassandra via SH Script
