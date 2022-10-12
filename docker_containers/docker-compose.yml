@@ -111,14 +111,14 @@ services:
 
   # Creating Tables and Keyspaces for Cassandra via SH Script
   plc-data-cassandra:
-    image: cassandra:4
+    build:
+      context: .
+      dockerfile: Dockerfile.cassandraexec
     container_name: plc_data_cassandra
     depends_on:
       - cassandra
     restart: "no"
     entrypoint: ["/plc_data_cassandra.sh"]
-    volumes:
-      - ./plc_data_cassandra.sh:/plc_data_cassandra.sh
 
 volumes:
   grafana:
