@@ -186,3 +186,6 @@ data/
 
 # nodered
 dataStore/
+
+# mosquitto
+mqtt_broker/log
