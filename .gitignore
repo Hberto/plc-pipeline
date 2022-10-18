@@ -181,6 +181,9 @@ src/plc_connector/.idea/misc.xml
 src/plc_connector/.idea/runConfigurations.xml
 src/spark/testSimple/__pycache__/simplestream.cpython-38.pyc
 
+# plc4x
+plc4x_connector/
+
 # grafana 
 data/
 
