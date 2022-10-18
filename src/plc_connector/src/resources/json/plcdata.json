@@ -1,0 +1,7 @@
+{
+  "orderNr" : "12006000",
+  "senderName" : "S7-1200",
+  "operation" : "Read",
+  "dataType" : "Boolean",
+  "data" : "true"
+}
