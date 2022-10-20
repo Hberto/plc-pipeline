@@ -1,5 +1,6 @@
 package MQTT_connector;
 
+import KafkaPLCProducer.StringFormat.StringProducer;
 import org.eclipse.paho.mqttv5.client.*;
 
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -9,33 +10,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 
 /**
- * This class is a wrapper of the mqtt paho client.
+ * This class is a wrapper of the mqtt paho client and a bridge between the mqtt broker and kafka broker.
  * The wrapper connects, disconnects, subscribes and publishes topic with the mqtt paho payload
  * @author Herberto Werner
  */
-public class MQTT_client implements MqttCallback {
+public class MQTT_Kafka_Bridge implements MqttCallback {
 
+    StringProducer prod;
+    //MQTT Configs
     private static final String CLIENT_ID = "mqtt_pipeline";
     private static final int QOS_LEVEL_0_FIRE_AND_FORGET = 0;
     private static final int QOS_LEVEL_1_AT_LEAST_ONCE = 1;
+    private static final int QOS_LEVEL_2_EXACTLY_ONCE = 2;
+    private static final String KEY = "test";
 
     private MqttClient mqttClient;
     private MqttConnectionOptions connOpts;
-    private static final Logger log = LoggerFactory.getLogger(MQTT_client.class);
+
+
+    private static final Logger log = LoggerFactory.getLogger(MQTT_Kafka_Bridge.class);
 
     /**
      * Simple Constructor of the Mqtt Client which creates a new Mqtt Client.
      * @param host the host/broker as IP-Address
      * @param port the port of the host/broker
      */
-    public MQTT_client(String host, int port) {
+    public MQTT_Kafka_Bridge(String host, int port) {
 
         if (host == null) {
             throw new IllegalArgumentException(" Parameter 'host' can't be null");
         }
         try {
+            prod = new StringProducer();
             this.mqttClient = new MqttClient("tcp://"
                     + host + ":"
                     + port,
@@ -70,7 +79,7 @@ public class MQTT_client implements MqttCallback {
     }
 
     /**
-     * Publishes a Message to the host/broker with a topic and content
+     * Publishes a Message to the mqtt host/broker with a topic and content.
      * @param topic The topic which the mqtt client will publish to
      * @param content the Payload of the Message. Format: String
      */
@@ -85,22 +94,43 @@ public class MQTT_client implements MqttCallback {
             log.error("Publishing a Message failed");
             log.error(e.getMessage());
             e.printStackTrace();
+            disconnect();
         }
     }
 
     /**
-     * Subscribes to a topic.
-     * @param topic The topic which the mqtt client will subscribe to
+     * Subscribes to a topic with a qos level.
+     * @param topic The topic which the mqtt client will subscribe to.
+     * @param qos qos level 0,1,2
      */
-    public void subscribeMsg(String topic) {
+    public void subscribeMsg(String topic, int qos) {
+
+        if (topic == null) {
+            throw new IllegalArgumentException(" Parameter 'topic' can't be null");
+        }
+
+        if (qos < 0 || qos > 2 ) {
+            throw new IllegalArgumentException(" Parameter 'qos' can't be below 0 or above 3");
+        }
 
         try {
-            this.mqttClient.subscribe(topic,QOS_LEVEL_1_AT_LEAST_ONCE);
+            switch(qos){
+                case 0:
+                    this.mqttClient.subscribe(topic,QOS_LEVEL_0_FIRE_AND_FORGET);
+                    break;
+                case 1:
+                    this.mqttClient.subscribe(topic,QOS_LEVEL_1_AT_LEAST_ONCE);
+                    break;
+                case 2:
+                    this.mqttClient.subscribe(topic,QOS_LEVEL_2_EXACTLY_ONCE);
+                    break;
+            }
         }
         catch (MqttException e) {
             log.error("Receiving and subscribing a Message failed");
             log.error(e.getMessage());
             e.printStackTrace();
+            disconnect();
         }
     }
 
@@ -119,6 +149,31 @@ public class MQTT_client implements MqttCallback {
         }
     }
 
+    /**
+     * Sends the message to a Kafka Broker.
+     * @param topic The topic the payload will be published to.
+     * @param kafkaKey Key of Kafka Record.
+     * @param payload Payload of Kafka Record.
+     */
+    public void sendToKafka(String topic, String kafkaKey, String payload) {
+
+        if (topic == null) {
+            throw new IllegalArgumentException(" Parameter 'topic' can't be null");
+        }
+
+        if (kafkaKey == null) {
+            throw new IllegalArgumentException(" Parameter 'kafkaKey' can't be null");
+        }
+
+        if (payload == null) {
+            throw new IllegalArgumentException(" Parameter 'payload' can't be null");
+        }
+
+        prod.runProducerString(topic, kafkaKey, payload);
+
+
+    }
+
     @Override
     public void disconnected(MqttDisconnectResponse mqttDisconnectResponse) {
         //Nothing to Do
@@ -131,11 +186,15 @@ public class MQTT_client implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        log.info("THE TOPIC:  " + topic + "\n\t"
-                + "MESSAGE:  " + new String (mqttMessage.getPayload(), StandardCharsets.UTF_8));
 
-        System.out.println("THE TOPIC:  " + topic + "\n\t"
-                + "MESSAGE:  " + new String (mqttMessage.getPayload(), StandardCharsets.UTF_8));
+        String payload = new String (mqttMessage.getPayload(), StandardCharsets.UTF_8);
+        log.info("THE TOPIC:  " + topic
+                + "\n\t"
+                + "MESSAGE:  " + payload
+                + "\n\t"
+                + "TIMESTAMP:  " + new Timestamp(System.currentTimeMillis()));
+
+        sendToKafka(topic,KEY,payload);
     }
 
     @Override

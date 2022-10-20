@@ -3,6 +3,10 @@ package MQTT_connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Application Starter for the MQTT Kafka Bridge.
+ * @author Herberto Werner
+ */
 public class Application_pipeline {
 
     private static final Logger log = LoggerFactory.getLogger(Application_pipeline.class);
@@ -13,12 +17,11 @@ public class Application_pipeline {
 
     public static void main(String[] args) {
 
-        MQTT_client mqttClient = new MQTT_client(HOST,PORT);
+        log.info("Starting MQTT_KAFKA_BRDIGE");
+        MQTT_Kafka_Bridge mqttClient = new MQTT_Kafka_Bridge(HOST,PORT);
         mqttClient.connect();
-        System.out.println("Connected....");
-        mqttClient.publishMsg("test","hello_world");
-        System.out.println("SENT....");
+        mqttClient.subscribeMsg("test",1);
 
-        mqttClient.subscribeMsg("test");
     }
+
 }
