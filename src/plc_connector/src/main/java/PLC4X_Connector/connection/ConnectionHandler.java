@@ -45,16 +45,23 @@ public class ConnectionHandler implements IConnector {
 
 
     @Override
-    public PlcConnection connect(boolean simple) throws PlcConnectionException {
-        PlcConnection con;
+    public PlcConnection connect(boolean simple) {
+        PlcConnection con = null;
 
-        if(simple) {
-            con = driverManager.getConnection(adr);
+        try {
+            if(simple) {
+                con = driverManager.getConnection(adr);
+            }
+            else {
+                con = driverManagerPool.getConnection(adr);
+            }
+            numConnections++;
         }
-        else {
-            con = driverManagerPool.getConnection(adr);
+
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error("No Connection at ConnectionHandler");
         }
-        numConnections++;
         return con;
     }
 
