@@ -37,12 +37,12 @@ public class ReadOperation implements IReadPLC {
     @Override
     public void readSingleField(String itemName, String fieldAdr) {
 
-        if(itemName.length() < 0 || itemName.isEmpty()) {
+        if(itemName.isEmpty()) {
             log.error("Parameter itemName null");
             throw new IllegalArgumentException("Parameter itemName null or empty");
         }
 
-        if(fieldAdr.length() < 0 || fieldAdr.isEmpty()) {
+        if(fieldAdr.isEmpty()) {
             log.error("Parameter field address null");
             throw new IllegalArgumentException("Parameter field address null or empty");
         }
