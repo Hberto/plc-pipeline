@@ -17,6 +17,8 @@ def update_spark_log_level(spark):
     logger = log4j.LogManager.getLogger("my logger")
     return logger
 
+
+## DEAD CODE DELETE
 def writeToCassandra(writeDF, _):
     writeDF.write \
         .format("org.apache.spark.sql.cassandra")\
@@ -69,7 +71,7 @@ def stream_testing():
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:9092") \
-        .option("subscribe", "strings") \
+        .option("subscribe", "test") \
         .option("startingOffsets", "earliest") \
         .load()
 
@@ -79,7 +81,7 @@ def stream_testing():
     print(streaming_status)
     df = df.selectExpr("CAST(key AS STRING)", "CAST(topic AS STRING)", "CAST(partition AS STRING)",
                        "CAST(offset AS STRING)", "CAST(value AS STRING)")
-    #df.writeStream.format("console").outputMode("update").option("truncate", False).start().awaitTermination()
+    df.writeStream.format("console").outputMode("update").option("truncate", False).start().awaitTermination()
 
     
     # Dataframe with jsonSchema
@@ -111,11 +113,11 @@ def stream_testing():
  #       .start()\
  #       .awaitTermination()
  #   df1.show()
-    query = df1.write \
-        .mode("append") \
-        .format("org.apache.spark.sql.cassandra") \
-        .options(table="test", keyspace="test") \
-        .save()
+#    query = df1.write \
+#        .mode("append") \
+#        .format("org.apache.spark.sql.cassandra") \
+#        .options(table="test", keyspace="test") \
+#        .save()
 
     # ToDo: Create right schemata for plc
     # ToDo: create table like schema in cassandra
