@@ -171,7 +171,7 @@ modules.xml
 .idea/sonarlint
 
 # plc_connector
-plc_connector/.idea/**
+/src/plc_connector/.idea/**
 /src/plc_connector/.idea/misc.xml
 /src/plc_connector/.idea/runConfigurations.xml
 
