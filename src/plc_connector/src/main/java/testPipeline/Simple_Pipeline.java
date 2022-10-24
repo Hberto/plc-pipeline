@@ -34,9 +34,10 @@ public class Simple_Pipeline {
          *   Testing the first version and PLC4X_Connector.PLC4X_Connector.connection to plc (S7-1200)
          */
 
-        try (PlcConnection con = driverManager.getConnection("s7://192.168.178.200")){
+        try (PlcConnection con = driverManager.getConnection("s7://192.168.0.2")){
             log.info("Test: Connection success");
             CompletableFuture<? extends PlcReadResponse> reqFuture = con.readRequestBuilder()
+                    .addItem("test2","%I0.1:BOOL")
                     .addItem("test","%I0.0:BOOL")
                     .build()
                     .execute();
@@ -53,9 +54,6 @@ public class Simple_Pipeline {
             e.printStackTrace();
             log.error("Test: No Connection");
         }
-
-        //ToDo: Integrate kafka producer and connect
-
 
     }
 
