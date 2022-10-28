@@ -4,6 +4,10 @@ import PLC4X_Connector.connection.ConnectionHandler;
 import org.apache.plc4x.java.PlcDriverManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.sql.Timestamp;
+import java.util.Date; 
+
+import KafkaPLCProducer.StringFormat.StringProducer;
 
 
 /**
@@ -25,14 +29,18 @@ public class ApplicationStarter {
 
     public static void main(String[] args) {
 
-        driverManager = new PlcDriverManager();
-        conHandler = new ConnectionHandler(CON_ADDR, driverManager);
-
-        //Returns a PLCConnection with a driverManager or driverManagerPool
-        reader = new ReadOperation(conHandler.connect(true));
-        log.info("Test: Connection success");
-        reader.readSingleField("test2","%I0.1:BOOL");
-        log.info("Read success");
+        //driverManager = new PlcDriverManager();
+        //conHandler = new ConnectionHandler(CON_ADDR, driverManager);
+//
+        ////Returns a PLCConnection with a driverManager or driverManagerPool
+        //reader = new ReadOperation(conHandler.connect(true));
+        //log.info("Test: Connection success");
+        //reader.readSingleField("test2","%I0.1:BOOL");
+        //log.info("Read success");
+        StringProducer prod = new StringProducer();
+        for(int i=0; i < 1; i++){
+            prod.runProducerString("test", "test", String.valueOf(i));
+        }
     }
 
 
