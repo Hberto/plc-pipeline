@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Date; 
 
 /**
  * This class is a wrapper of the mqtt paho client and a bridge between the mqtt broker and kafka broker.
@@ -28,8 +27,12 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
     private static final int QOS_LEVEL_2_EXACTLY_ONCE = 2;
     private static final String KEY = "test";
 
+    private static final String csvFilePath = "src/main/java/MQTT_connector/timestamp_measurement/MQTTArrival.csv";
+
     private MqttClient mqttClient;
     private MqttConnectionOptions connOpts;
+
+    private int msgCount;
 
 
     private static final Logger log = LoggerFactory.getLogger(MQTT_Kafka_Bridge.class);
@@ -40,7 +43,7 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
      * @param port the port of the host/broker
      */
     public MQTT_Kafka_Bridge(String host, int port) {
-
+        msgCount = 0;
         if (host == null) {
             throw new IllegalArgumentException(" Parameter 'host' can't be null");
         }
@@ -181,6 +184,26 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
 
     }
 
+    /**
+     * Returns the MessageCount.
+     * @return the message count.
+     */
+    public int getMsgCount() {
+        return msgCount;
+    }
+
+    /**
+     * Sets the MessageCount.
+     * @param msgCount the message count to be setted.
+     */
+    public void setMsgCount(int msgCount) {
+        msgCount = msgCount;
+    }
+
+    public void resetMsgCount(){
+        msgCount = 0;
+    }
+
     @Override
     public void disconnected(MqttDisconnectResponse mqttDisconnectResponse) {
         //Nothing to Do
@@ -194,7 +217,10 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         // Measure arrival of mqtt message
+        msgCount++;
         Timestamp ts = new Timestamp(System.currentTimeMillis());
+        MeasurementTimestamp.measureMqttAndSaveToCSV(csvFilePath,ts,msgCount);
+
         String payload = new String (mqttMessage.getPayload(), StandardCharsets.UTF_8);
         log.info("THE TOPIC:  " + topic
                 + "\n\t"
@@ -222,17 +248,4 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
         //Nothing to Do
     }
 
-    /**
-     * Private Methods
-    */
-
-    private void measureMqttAndSaveToCSV(Timestamp measurementTS){
-        //ToDo:
-        String csvFile = "./timestamp_measurement/MQTTArrival.csv";
-
-        long measureMilli = measurementTS.getTime();
-        Date date = measurementTS;
-        
-        //ToDo: Save measurementTS to CSV
-    }
 }
