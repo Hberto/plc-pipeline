@@ -9,6 +9,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -18,7 +19,7 @@ import java.util.Properties;
 public class StringProducer {
 
     //Configs for Kafka
-    private final static String BOOTSTRAP_SERVERS = "89.58.43.63:29092";
+    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
     private final static String CLIENT_ID = "plcpipeline";
     private static final Logger log = LoggerFactory.getLogger(StringProducer.class);
 
@@ -54,6 +55,32 @@ public class StringProducer {
 
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(topic, key,value);
+            producer.send(record);
+            producer.flush();
+            log.info("Producer sent record!");
+        } catch (Exception e) {
+            log.error("Exception at sending from Producer Operation");
+            e.printStackTrace();
+            producer.close();
+        }
+    }
+
+    public void runProducerStringWithTS(String topic, Integer partition,Long timestamp, String key, String value) {
+
+        if (topic == null) {
+            throw new IllegalArgumentException(" Parameter 'topic' can't be null");
+        }
+
+        if (key == null) {
+            throw new IllegalArgumentException(" Parameter 'key' can't be null");
+        }
+
+        if (value == null) {
+            throw new IllegalArgumentException(" Parameter 'value' can't be null");
+        }
+
+        try {
+            ProducerRecord<String, String> record = new ProducerRecord<>(topic,null,timestamp, key,value);
             producer.send(record);
             producer.flush();
             log.info("Producer sent record!");
