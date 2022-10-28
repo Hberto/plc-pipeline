@@ -1,6 +1,8 @@
 FROM ubuntu:20.04
 LABEL maintainer="masroorh"
 ADD  ./simplestream.py /scripts/simplestream.py
+ADD  ./timestamp_measurement/kafkaQueue.csv /scripts/kafkaQueue.csv
+ADD  ./timestamp_measurement/sparkProcess.csv /scripts/sparkProcess.csv
 
 # Avoid stuck build due to user prompt
 ENV DEBIAN_FRONTEND="noninteractive" 
@@ -19,10 +21,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y python3.8 pytho
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-# Install PySpark and Numpy
+# Install Python Packages
 RUN \
     pip install numpy && \
-    pip install pyspark
+    pip install pyspark && \
+    pip install pandas && \
+    pip install sparkmeasure
 
 # Define default command
 ENTRYPOINT ["tail"]
