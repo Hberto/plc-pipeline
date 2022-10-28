@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.util.Date; 
 
 /**
  * This class is a wrapper of the mqtt paho client and a bridge between the mqtt broker and kafka broker.
@@ -154,8 +155,10 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
      * @param topic The topic the payload will be published to.
      * @param kafkaKey Key of Kafka Record.
      * @param payload Payload of Kafka Record.
+     * @param withTS Integration of TS query
+     * @param timestamp the timestamp to be passed
      */
-    public void sendToKafka(String topic, String kafkaKey, String payload) {
+    public void sendToKafka(String topic, String kafkaKey, String payload, boolean withTS, long timestamp) {
 
         if (topic == null) {
             throw new IllegalArgumentException(" Parameter 'topic' can't be null");
@@ -169,8 +172,12 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
             throw new IllegalArgumentException(" Parameter 'payload' can't be null");
         }
 
-        prod.runProducerString(topic, kafkaKey, payload);
-
+        if(withTS){
+            prod.runProducerStringWithTS(topic, null, timestamp, kafkaKey, payload);
+        }
+        else {
+            prod.runProducerString(topic, kafkaKey, payload);
+        }
 
     }
 
@@ -186,7 +193,8 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-
+        // Measure arrival of mqtt message
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
         String payload = new String (mqttMessage.getPayload(), StandardCharsets.UTF_8);
         log.info("THE TOPIC:  " + topic
                 + "\n\t"
@@ -194,7 +202,9 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
                 + "\n\t"
                 + "TIMESTAMP:  " + new Timestamp(System.currentTimeMillis()));
 
-        sendToKafka(topic,KEY,payload);
+        sendToKafka(topic, KEY,payload,true, new Timestamp(System.currentTimeMillis()).getTime());
+
+        
     }
 
     @Override
@@ -210,5 +220,19 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
     @Override
     public void authPacketArrived(int i, MqttProperties mqttProperties) {
         //Nothing to Do
+    }
+
+    /**
+     * Private Methods
+    */
+
+    private void measureMqttAndSaveToCSV(Timestamp measurementTS){
+        //ToDo:
+        String csvFile = "./timestamp_measurement/MQTTArrival.csv";
+
+        long measureMilli = measurementTS.getTime();
+        Date date = measurementTS;
+        
+        //ToDo: Save measurementTS to CSV
     }
 }
