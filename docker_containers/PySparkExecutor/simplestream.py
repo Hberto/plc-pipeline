@@ -93,7 +93,7 @@ def stream_testing():
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:9092") \
-        .option("subscribe", "test") \
+        .option("subscribe", "12003800_test") \
         .option("startingOffsets", "earliest") \
         .load()
 
@@ -116,7 +116,7 @@ def stream_testing():
     print(streaming_status)
 
     logger.info("++++++Select and Processing Section++++++")
-    df = df.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS Timestamp)")
+    df = df.selectExpr("CAST(topic as STRING)","CAST(value AS STRING)", "CAST(timestamp AS Timestamp)")
     df.printSchema()
     # Change Column Type
     df_new = df.withColumn("value", df["value"].cast(IntegerType()))
