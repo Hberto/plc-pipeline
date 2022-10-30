@@ -38,8 +38,25 @@ public class ApplicationStarter {
         //reader.readSingleField("test2","%I0.1:BOOL");
         //log.info("Read success");
         StringProducer prod = new StringProducer();
-        for(int i=0; i < 1; i++){
-            prod.runProducerString("test", "test", String.valueOf(i));
+        //for(int i=0; i < 1000; i++){
+        //    prod.runProducerString("12003800_test", "test", String.valueOf(i));
+        //}
+        try {
+            ApplicationStarter.fire();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    synchronized public static void fire() throws InterruptedException {
+        StringProducer prod = new StringProducer();
+        int min = 0;
+        int max = 1000;
+        while(true) {
+            int randomNu = (int)(Math.random()*(max-min+1)+min);  
+            prod.runProducerString("12003800_test", "test", String.valueOf(randomNu));
+            Thread.sleep(5000);
         }
     }
 
