@@ -20,7 +20,7 @@ public class Application_pipeline {
         log.info("Starting MQTT_KAFKA_BRDIGE");
         MQTT_Kafka_Bridge mqttClient = new MQTT_Kafka_Bridge(HOST,PORT);
         mqttClient.connect();
-        mqttClient.subscribeMsg("test",1);
+        mqttClient.subscribeMsg("12003800_test",1);
 
     }
 
