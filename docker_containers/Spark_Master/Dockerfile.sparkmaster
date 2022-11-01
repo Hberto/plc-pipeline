@@ -1,0 +1,5 @@
+FROM docker.io/bitnami/spark:3
+# Loading Spark Confis
+ADD ./config/spark-defaults.conf /opt/bitnami/spark/conf/spark-defaults.conf
+#create directory
+RUN mkdir -m777 -p /opt/spark-events
