@@ -1,0 +1,1 @@
+MeasureNr;MeasureDate;SPS_Date;SPS_inMS;MQTT_Bridge_Date;MQTT_Bridge_inMS;Kafka;Kafka;Spark_submittedDatetime;Spark_executionDurationinMS;CassandraWriteDate;CassandraWriteinMS;GrafanaArrivalinMS;GrafanaArrivalinDate;Total
