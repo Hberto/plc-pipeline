@@ -1,8 +1,13 @@
 FROM ubuntu:20.04
 LABEL maintainer="masroorh"
+
+# Adding scripts and measurement csv's
 ADD  ./simplestream.py /scripts/simplestream.py
 ADD  ./timestamp_measurement/kafkaQueue.csv /scripts/kafkaQueue.csv
 ADD  ./timestamp_measurement/sparkProcess.csv /scripts/sparkProcess.csv
+
+# Creates a Directory for the history server
+RUN mkdir spark-events
 
 # Avoid stuck build due to user prompt
 ENV DEBIAN_FRONTEND="noninteractive" 
