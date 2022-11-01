@@ -76,6 +76,9 @@ def stream_testing():
         .config("spark.cassandra.connection.port","9042")\
         .config("spark.cassandra.auth.username","cassandra")\
         .config("spark.cassandra.auth.password","cassandra")\
+        .config("spark.eventLog.enabled","true")\
+        .config("spark.eventLog.dir","file:///spark-events")\
+        .config("spark.history.fs.logDirectory","file:///spark-events")\
         .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0,com.datastax.spark:spark-cassandra-connector_2.12:3.0.0,ch.cern.sparkmeasure:spark-measure_2.12:0.19")\
         .appName(appNameKafka) \
         .getOrCreate()
