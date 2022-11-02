@@ -194,7 +194,7 @@ dataStore/
 mqtt_broker/log
 
 # Logs HistoryServer
-Logs_and_Configs/Spark/historyServer/**
+Logs_and_Configs/Spark/historyServer/
 
 # Grafana Logs
 Logs_and_Configs/Grafana/grafana.log
