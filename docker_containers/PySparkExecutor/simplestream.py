@@ -79,7 +79,7 @@ def stream_testing():
         .config("spark.eventLog.enabled","true")\
         .config("spark.eventLog.dir","file:///spark-events")\
         .config("spark.history.fs.logDirectory","file:///spark-events")\
-        .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0,com.datastax.spark:spark-cassandra-connector_2.12:3.0.0,ch.cern.sparkmeasure:spark-measure_2.12:0.19")\
+        .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.1,com.datastax.spark:spark-cassandra-connector_2.12:3.0.0,ch.cern.sparkmeasure:spark-measure_2.12:0.19")\
         .appName(appNameKafka) \
         .getOrCreate()
     logger = update_spark_log_level(spark)
@@ -100,6 +100,16 @@ def stream_testing():
         .option("startingOffsets", "earliest") \
         .load()
 
+    # For Latency Measurement: Writing back to Kafka
+    query_toKafka = df \
+        .selectExpr("CAST(key AS STRING)","CAST(value AS STRING)") \
+        .writeStream \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", "kafka:9092") \
+        .option("topic", "12003800_test2") \
+        .option("checkpointLocation", "/tmp") \
+        .start()
+    
     # Measurment of KafkaQueueTS
     ts_Kafka_Queue = datetime.datetime.now()
     ts_Kafka_Queue_long = ts_Kafka_Queue.timestamp()
@@ -121,6 +131,7 @@ def stream_testing():
     logger.info("++++++Select and Processing Section++++++")
     df = df.selectExpr("CAST(topic as STRING)","CAST(value AS STRING)", "CAST(timestamp AS Timestamp)")
     df.printSchema()
+    
     # Change Column Type
     df_new = df.withColumn("value", df["value"].cast(IntegerType()))
     df_new.printSchema()
