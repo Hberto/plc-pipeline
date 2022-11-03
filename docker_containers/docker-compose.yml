@@ -96,17 +96,13 @@ services:
   
   # Setting up Big Data Store Cassandra
   cassandra:
-    container_name: cassandra
     image: cassandra:4
+    container_name: cassandra
     ports:
       - "9042:9042"
     restart: "always"
-#    entrypoint: ["/plc_data_cassandra.sh"]
-#    environment: 
-#      HEAP_NEWSIZE: 128M
-#      MAX_HEAP_SIZE: 1024M
-#    volumes:
-#      - ./plc_data_cassandra.sh:/plc_data_cassandra.sh
+    volumes:
+      - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
 
   # Setting up Grafana as Monitoring tool for PLC Data
   grafana:
@@ -118,10 +114,11 @@ services:
       - "3000:3000"
     environment: 
       GF_LOG_LEVEL: debug
+      GF_LOG_MODE: console file
       GF_INSTALL_PLUGINS: "hadesarchitect-cassandra-datasource"
     volumes:
-#      - /home/herb/BA/plc-pipeline/docker_containers/grafana/data:/var/lib/grafana
-      - /home/herb/BA/plc-pipeline/docker_containers/grafana/provisioning:/etc/grafana/provisioning/
+      - ./Logs_and_Configs/Grafana:/var/log/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning/
 
   # Creating Tables and Keyspaces for Cassandra via SH Script
   plc-data-cassandra:
@@ -152,4 +149,6 @@ volumes:
   pyspark-executor:
     external: true
   spark-master:
+    external: true
+  cassandra:
     external: true
