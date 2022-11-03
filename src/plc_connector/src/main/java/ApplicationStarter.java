@@ -56,7 +56,8 @@ public class ApplicationStarter {
         while(true) {
             int randomNu = (int)(Math.random()*(max-min+1)+min);  
             prod.runProducerString("12003800_test", "test", String.valueOf(randomNu));
-            Thread.sleep(5000);
+            Thread.sleep(10000);
+            prod.getMetrics();
         }
     }
 
