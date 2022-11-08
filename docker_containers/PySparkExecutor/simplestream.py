@@ -61,6 +61,14 @@ def writeToCassandra(writeDF, epochId):
         .options(table="test", keyspace="test")\
         .save()
 
+def readFromCassandra(readDf, epochId):
+    readDf.read \
+        .format("org.apache.spark.sql.cassandra")\
+        .mode('append')\
+        .options(table="test", keyspace="test")\
+        .load()\
+        .show()\
+
 # Function for experiments
 def stream_testing():
 
