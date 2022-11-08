@@ -120,6 +120,13 @@ services:
       - ./Logs_and_Configs/Grafana:/var/log/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning/
 
+  # Measure Read Latency of Cassandra to Cassandra Client Mockup as representing Grafana
+  grafana-mockup:
+    build:
+      context: ./grafanaMockup/
+      dockerfile: Dockerfile.grafanaMockUp 
+    container_name: grafanaMockUp
+
   # Creating Tables and Keyspaces for Cassandra via SH Script
   plc-data-cassandra:
     build:
