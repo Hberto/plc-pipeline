@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Properties;
 
+import java.util.Date;
 /**
  * This class creates a simple String Kafka Producer.
  * @author Herberto Werner
@@ -59,6 +60,10 @@ public class StringProducer {
 
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(topic, key,value);
+            Timestamp ts = new Timestamp(System.currentTimeMillis());
+            long measureMilli = ts.getTime();
+            Date date = ts;
+            System.out.println("++++++CURRENT TS :"+ date.toString() + " inMs: " + measureMilli);
             producer.send(record);
             producer.flush();
             log.info("Producer sent record!");
@@ -125,49 +130,4 @@ public class StringProducer {
             properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
             return new KafkaProducer<>(properties);
         }
-
-    public void getMetrics() {
-        Metric requestRateAvg = null;
-        Metric connCount = null;
-        Metric requestLatMax = null;
-        Metric recordQueTimeAvg = null;
-        Metric recordQueTimeMax = null;
-        Metric requestLatAvg = null;
-        // request-latency-avg - check
-        // request-latency-max
-        // DelayQueueSize
-        //RequestQueueTimeMs
-        for(Map.Entry<MetricName, ? extends Metric> entry : producer.metrics().entrySet()){
-            if("request-latency-avg".equals(entry.getKey().name())) {
-                requestRateAvg = entry.getValue();
-                System.out.println(requestRateAvg.metricValue());
-            }
-            if("connection-count".equals(entry.getKey().name())) {
-                connCount = entry.getValue();
-                System.out.println(connCount.metricValue());
-            }
-            if("request-latency-max".equals(entry.getKey().name())) {
-                requestLatMax = entry.getValue();
-                System.out.println(requestLatMax.metricValue());
-            }
-            if("record-queue-time-avg".equals(entry.getKey().name())) {
-                recordQueTimeAvg = entry.getValue();
-                System.out.println(recordQueTimeAvg.metricValue());
-            }
-            if("record-queue-time-max".equals(entry.getKey().name())) {
-                recordQueTimeMax = entry.getValue();
-                System.out.println(recordQueTimeMax.metricValue());
-            }
-            if("request-latency-avg".equals(entry.getKey().name())) {
-                requestLatAvg = entry.getValue();
-                System.out.println(requestLatAvg.metricValue());
-            }
-            else {
-                System.out.println("Nothing happened");
-            }
-
-
-        }
-    }
-
 }
