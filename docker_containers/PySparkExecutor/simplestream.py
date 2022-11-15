@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
+from pyspark.sql import functions as F
 import csv
 import datetime
 import pandas as pd
@@ -8,10 +9,6 @@ import pandas as pd
 appNameKafka = "Testing the Stream with Kafka"
 
 # Measurement Parameters
-
-# Kafka Measurements Variables
-header_kafka = ['QueueTSMeasurementNr','TSDateformat', 'TSHourFormat', 'TSLongformat']
-my_file_kafka = '/scripts/kafkaQueue.csv'
 
 # Spark Measurement Variables
 header_spark = ['SparkProcessingTimeMeasureNr', 'TSDateformat', 'ClockTime1', 'ClockTime2', 'ProcessingTimeLong']
@@ -61,6 +58,16 @@ def writeToCassandra(writeDF, epochId):
         .options(table="test", keyspace="test")\
         .save()
 
+# For Experiments: save kafka timestamp to cassandra table
+# Comment it when measuring read/write latency of cassandra
+def saveKafkaTSToCassandra(writeDF, epochId):
+    writeDF.write \
+        .format("org.apache.spark.sql.cassandra")\
+        .mode('append')\
+        .options(table="kafka", keyspace="test")\
+        .save()
+
+# For Experiments: measure read latency of cassandra
 def readFromCassandra(readDf, epochId):
     readDf.read \
         .format("org.apache.spark.sql.cassandra")\
@@ -71,10 +78,6 @@ def readFromCassandra(readDf, epochId):
 
 # Function for experiments
 def stream_testing():
-
-    # Create Measurment CSVs
-    create_timestamp_with_header_csv(my_file_kafka, header_kafka)
-    create_timestamp_with_header_csv(my_file_spark,header_spark)
 
     # Create Spark Session for Kafka
     spark: SparkSession = SparkSession \
@@ -93,11 +96,6 @@ def stream_testing():
     logger = update_spark_log_level(spark)
     sc = spark.sparkContext
     
-    # Measurement 1 Spark Processing time
-    tsSparkprocessDate1 = datetime.datetime.now()
-    tsSpark1 = tsSparkprocessDate1.timestamp()
-
-
     # Read from Kafka Stream und save into dataframe
     logger.info("++++++Reading Stream from Kafka++++++")
     df = spark \
@@ -106,7 +104,9 @@ def stream_testing():
         .option("kafka.bootstrap.servers", "kafka:9092") \
         .option("subscribe", "12003800_test") \
         .option("startingOffsets", "earliest") \
-        .load()
+        .load() \
+        .withColumn("current_timestamp", F.current_timestamp())
+        
 
     # For Latency Measurement: Writing back to Kafka
     query_toKafka = df \
@@ -118,32 +118,16 @@ def stream_testing():
         .option("checkpointLocation", "/tmp") \
         .start()
     
+    print("++++++Select and Processing Section++++++")
     # Measurment of KafkaQueueTS
-    ts_Kafka_Queue = datetime.datetime.now()
-    ts_Kafka_Queue_long = ts_Kafka_Queue.timestamp()
+    df_kafka_ts = df.selectExpr("CAST(topic as STRING)","CAST(value AS STRING)","CAST(current_timestamp AS Timestamp)")
 
-    str_date = str(ts_Kafka_Queue)
-    date_time_split = str_date.split(" ")
-    date_format = date_time_split[0]
-    hour_format = date_time_split[1]
-
-    # Put into csv
-    data_kafka = ['1', date_format, hour_format , ts_Kafka_Queue_long]
-    write_row(data_kafka, my_file_kafka)
-
-
-    logger.info("++++++Streaming Status++++++")
-    streaming_status = df.isStreaming
-    print(streaming_status)
-
-    logger.info("++++++Select and Processing Section++++++")
+    # Filter Data for Cassandra
     df = df.selectExpr("CAST(topic as STRING)","CAST(value AS STRING)", "CAST(timestamp AS Timestamp)")
-    df.printSchema()
-    
     # Change Column Type
     df_new = df.withColumn("value", df["value"].cast(IntegerType()))
-    df_new.printSchema()
 
+    # Write Streams into Cassandra
     print("++Running Kafka-Spark-Cassandra Stream++")
     query = df_new.writeStream \
         .trigger(processingTime="0 seconds") \
@@ -151,24 +135,13 @@ def stream_testing():
         .foreachBatch(writeToCassandra) \
         .start()
 
-    # Measurement 2 Spark Processing time
-    tsSparkprocessDate2 = datetime.datetime.now()
-    tsSpark2 = tsSparkprocessDate2.timestamp()
-
-    # Measurment of SparkProcessingTime
-    str_date1 = str(tsSparkprocessDate1)
-    str_date2 = str(tsSparkprocessDate2)
-    date_time_split1 = str_date1.split(" ")
-    date_time_split2 = str_date2.split(" ")
-    date_format1 = date_time_split1[0]
-
-    hour_format1 = date_time_split1[1]
-    hour_format2 = date_time_split2[1]
-    difference_execute_time = tsSpark2 - tsSpark1
-
-    # Put into csv
-    data_spark = ['1', date_format1, hour_format1 , hour_format2, difference_execute_time]
-    write_row(data_spark, my_file_spark)
+    # Comment when measuring Spark jobs duration 
+    kafka_ts_query = df_kafka_ts.writeStream \
+        .trigger(processingTime="0 seconds") \
+        .outputMode("append") \
+        .foreachBatch(saveKafkaTSToCassandra) \
+        .start()
+    
     print("++Running Query Stream..waiting for Termination++")
     query.awaitTermination()
 
