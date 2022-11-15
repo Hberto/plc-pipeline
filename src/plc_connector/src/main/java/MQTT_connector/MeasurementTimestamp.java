@@ -25,11 +25,10 @@ public class MeasurementTimestamp {
         long measureMilli = measurementTS.getTime();
         Date date = measurementTS;
 
-        String[] header = { "MQTTMeasurementNr", "Date", "ArrivalTimeInMS" };
+        //String[] header = { "MQTTMeasurementNr", "Date", "ArrivalTimeInMS" };
         String[] data = {String.valueOf(nr), date.toString(), String.valueOf(measureMilli)};
 
-        //Writes Header and then the data to the csv file
-        writeDataLineByLine(csvFile,header);
+        //Writes data to the csv file
         writeDataLineByLine(csvFile,data);
     }
 
