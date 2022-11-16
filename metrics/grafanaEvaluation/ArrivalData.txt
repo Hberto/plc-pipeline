@@ -1,0 +1,8 @@
+logger=accesscontrol.service t=2022-11-16T16:36:01.881955486+01:00 level=debug msg="cache permissions" key=rbac-permissions-1-user-1
+ logger=query_data t=2022-11-16T16:36:01.882101825+01:00 level=debug msg="Processing metrics query" query="unsupported value type"
+ logger=secrets.kvstore t=2022-11-16T16:36:01.882159344+01:00 level=debug msg="got secret value from cache" orgId=1 type=datasource namespace="Apache Cassandra"
+ logger=provisioning.dashboard type=file name=myTest t=2022-11-16T16:36:02.301452612+01:00 level=debug msg="Start walking disk" path=/etc/grafana/provisioning/dashboards
+ logger=accesscontrol.service t=2022-11-16T16:36:06.877086466+01:00 level=debug msg="using cached permissions" key=rbac-permissions-1-user-1
+ logger=datasources t=2022-11-16T16:36:06.877261177+01:00 level=debug msg="Querying for data source via SQL store" id=1 orgId=1
+ logger=query_data t=2022-11-16T16:36:06.877488168+01:00 level=debug msg="Processing metrics query" query="unsupported value type"
+ logger=secrets.kvstore t=2022-11-16T16:36:06.877662018+01:00 level=debug msg="got secret value" orgId=1 type=datasource namespace="Apache Cassandra"
