@@ -10,9 +10,14 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;  
 import org.slf4j.LoggerFactory;
 
+import MQTT_connector.MeasurementTimestamp;
+
 import java.util.Properties;
 import java.util.Collections;
 import java.time.Duration;
+
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * A simple Kafka Consumer Class with static parameters.
@@ -22,11 +27,15 @@ import java.time.Duration;
 public class StringConsumer {
 
     //Configs for Kafka
-    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
+    private final static String BOOTSTRAP_SERVERS = "89.58.55.209:29092";
     private final static String GROUP_ID = "plcpipeline";
     private final static String TOPIC = "12003800_test2";
     private static final Logger log = LoggerFactory.getLogger(StringConsumer.class);
     private Consumer <String, String> consumer = null;
+
+    private static final String csvFilePath = "/home/herb/BA/plc-pipeline/metrics/mqttEvaluation/KafkaMsgArrival.csv";
+
+    private String val;
 
     /**
      * Constructor of the Consumer class.
@@ -41,8 +50,15 @@ public class StringConsumer {
     public void runConsumer() {
         ConsumerRecords<String,String> records=consumer.poll(Duration.ofMillis(100));
         for(ConsumerRecord<String, String> record : records) {
-            log.info("+++Reading Consumption!+++");
-            System.out.println("CONSUMER: "+ "Topic: " + record.topic() + "Timestamp in ms: " + record.timestamp());
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        MeasurementTimestamp.measureKafkaArrivalAndSaveToCSV(csvFilePath,ts);
+        long measureMilli = ts.getTime();
+        Date date = ts;
+        System.out.println("++++++ARRIVAL FROM SPARK TS :"+ date.toString()
+            + "\n\t"  
+            + "inMs: " + measureMilli);
+            //System.out.println("CONSUMER: "+ "Topic: " + record.topic() + "Timestamp in ms: " + record.timestamp() + "type:  "+record.timestampType());
+            setRecordValue(record.value());
         } 
     }
 
@@ -65,6 +81,21 @@ public class StringConsumer {
       return consumer;
      }
 
+     /**
+      * Sets the Record value.
+      * @param val the value to be setted.
+      */
+     public void setRecordValue(String val) {
+        this.val = val;
+     }
+
+     /**
+      * Returns the Record Value.
+      * @return the record value
+      */
+     public String getRecordValue() {
+        return val;
+     }
 
     
 }
