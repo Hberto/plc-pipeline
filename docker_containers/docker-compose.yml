@@ -12,6 +12,9 @@ services:
       - "2181:2181"
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
 # Setting up Kafdrop to monitor Kafka
   kafdrop:
@@ -24,6 +27,9 @@ services:
     environment:
         KAFKA_BROKERCONNECT: "kafka:9092"
         JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
 # Setting up Kafka as Messege Queue
   kafka:
@@ -35,7 +41,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_CFG_LISTENERS: "INTERNAL://:9092,EXTERNAL://:29092"
-      KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:29092"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://89.58.55.209:29092"
       KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper1:2181"
       KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT, EXTERNAL:PLAINTEXT"
@@ -44,6 +50,9 @@ services:
 #      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 #Uncomment for experiments
     depends_on:
       - zookeeper
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
 # Setting up Spark Master
   spark-master:
@@ -64,6 +73,8 @@ services:
       - "18080:18080"
     volumes:
       - ./Logs_and_Configs/Spark/historyServer:/opt/spark-events
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
   # Setting up Spark Worker to process jobs
   spark-worker:
@@ -83,6 +94,9 @@ services:
       - "8081:8081"
     depends_on:
       - "spark-master"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
 
   # Running python script to process my data from kafka in pyspark
@@ -93,6 +107,8 @@ services:
     container_name: executor
     volumes:
       - ./Logs_and_Configs/Spark/historyServer:/spark-events
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
   
   # Setting up Big Data Store Cassandra
   cassandra:
@@ -103,6 +119,8 @@ services:
     restart: "always"
     volumes:
       - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
   # Setting up Grafana as Monitoring tool for PLC Data
   grafana:
@@ -119,6 +137,8 @@ services:
     volumes:
       - ./Logs_and_Configs/Grafana:/var/log/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning/
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
   # Measure Read Latency of Cassandra to Cassandra Client Mockup as representing Grafana
   grafana-mockup:
@@ -126,6 +146,9 @@ services:
       context: ./grafanaMockup/
       dockerfile: Dockerfile.grafanaMockUp 
     container_name: grafanaMockUp
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
   # Creating Tables and Keyspaces for Cassandra via SH Script
   plc-data-cassandra:
@@ -137,6 +160,9 @@ services:
       - cassandra
     restart: "no"
     entrypoint: ["/plc_data_cassandra.sh"]
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
   # Mosquitto Broker
   mqtt_broker:
@@ -148,6 +174,8 @@ services:
     container_name: mqtt_broker
     volumes:
       - ./mqtt_broker/log/:/mosquitto/log/
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
 
 volumes:
