@@ -1,6 +1,7 @@
 package MQTT_connector;
 
 import KafkaPLCProducer.StringFormat.StringProducer;
+import KafkaConsumer.StringFormat.StringConsumer;
 import org.eclipse.paho.mqttv5.client.*;
 
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -18,8 +19,9 @@ import java.sql.Timestamp;
  * @author Herberto Werner
  */
 public class MQTT_Kafka_Bridge implements MqttCallback {
-
+    //Kafka Configs
     StringProducer prod;
+    StringConsumer cons;
     //MQTT Configs
     private static final String CLIENT_ID = "mqtt_pipeline";
     private static final int QOS_LEVEL_0_FIRE_AND_FORGET = 0;
@@ -27,7 +29,7 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
     private static final int QOS_LEVEL_2_EXACTLY_ONCE = 2;
     private static final String KEY = "test";
 
-    private static final String csvFilePath = "src/main/java/MQTT_connector/timestamp_measurement/MQTTArrival.csv";
+    private static final String csvFilePath = "/home/herb/BA/plc-pipeline/metrics/mqttEvaluation/MQTTArrival.csv";
 
     private MqttClient mqttClient;
     private MqttConnectionOptions connOpts;
@@ -49,6 +51,7 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
         }
         try {
             prod = new StringProducer();
+            cons = new StringConsumer();
             this.mqttClient = new MqttClient("tcp://"
                     + host + ":"
                     + port,
@@ -185,6 +188,23 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
     }
 
     /**
+     * Sends Data to PLC by publishing the arriving data from Kafka.
+     * Only new values are being sent.
+     */
+    public void sendToPLC() {
+        String val = "";
+        String oldVal = "";
+        while(true) {
+            cons.runConsumer();
+            val = cons.getRecordValue();
+            if(cons.getRecordValue() != null && !(val.equals(oldVal))) {
+                publishMsg("12003800_test2", cons.getRecordValue());
+                oldVal = cons.getRecordValue();
+            }
+        }
+    }
+
+    /**
      * Returns the MessageCount.
      * @return the message count.
      */
@@ -219,18 +239,19 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
         // Measure arrival of mqtt message
         msgCount++;
         Timestamp ts = new Timestamp(System.currentTimeMillis());
-        MeasurementTimestamp.measureMqttAndSaveToCSV(csvFilePath,ts,msgCount);
-
+        MeasurementTimestamp.measureMqttArrivalAndSaveToCSV(csvFilePath,ts,msgCount);
         String payload = new String (mqttMessage.getPayload(), StandardCharsets.UTF_8);
+        String payload2 = String.valueOf(msgCount);
+        int sizeMsg = mqttMessage.getPayload().length;
         log.info("THE TOPIC:  " + topic
                 + "\n\t"
                 + "MESSAGE:  " + payload
                 + "\n\t"
-                + "TIMESTAMP:  " + new Timestamp(System.currentTimeMillis()));
+                + "TIMESTAMP:  " + new Timestamp(System.currentTimeMillis())
+                + "\n\t"
+                + "SIZE OF PAYLOAD:  " + sizeMsg);
 
-        sendToKafka(topic, KEY,payload,true, new Timestamp(System.currentTimeMillis()).getTime());
-
-        
+        sendToKafka(topic, KEY,payload2,true, new Timestamp(System.currentTimeMillis()).getTime());
     }
 
     @Override
