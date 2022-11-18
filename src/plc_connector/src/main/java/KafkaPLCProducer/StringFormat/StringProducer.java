@@ -24,7 +24,7 @@ import java.util.Date;
 public class StringProducer {
 
     //Configs for Kafka
-    private final static String BOOTSTRAP_SERVERS = "localhost:29092";
+    private final static String BOOTSTRAP_SERVERS = "89.58.55.209:29092";
     private final static String CLIENT_ID = "plcpipeline";
     private static final Logger log = LoggerFactory.getLogger(StringProducer.class);
 
@@ -63,7 +63,7 @@ public class StringProducer {
             Timestamp ts = new Timestamp(System.currentTimeMillis());
             long measureMilli = ts.getTime();
             Date date = ts;
-            System.out.println("++++++CURRENT TS :"+ date.toString() + " inMs: " + measureMilli);
+            System.out.println("++++++CURRENT TS FROM PRODUCER :"+ date.toString() + " inMs: " + measureMilli);
             producer.send(record);
             producer.flush();
             log.info("Producer sent record!");
@@ -90,6 +90,10 @@ public class StringProducer {
 
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(topic,null,timestamp, key,value);
+             Timestamp ts = new Timestamp(System.currentTimeMillis());
+            long measureMilli = ts.getTime();
+            Date date = ts;
+            System.out.println("++++++CURRENT TS FROM PRODUCER :"+ date.toString() + " inMs: " + measureMilli);
             producer.send(record);
             producer.flush();
             log.info("Producer sent record!");
