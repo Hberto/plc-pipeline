@@ -27,18 +27,20 @@ print('connecting to cassandra')
 session = cluster.connect()
 print('execute query')
 
+## Get Arrival Data from Kafka
+rows_start_from_spark = session.execute("select current_timestamp from test.test;")
 
+## convert start date in ms and add 1h
+spark_start_time_in_ms =[(row.current_timestamp.timestamp()*1000) + ONE_HOUR  for row in rows_start_from_spark]
+print("Length of start arr: ", len(spark_start_time_in_ms))
+print(spark_start_time_in_ms)
 
-
-
-
-
-
-
-
-df = pd.read_csv(filePLCArrival)
-saved_column = df.ArrivalTimeInMS1
-
-
-df2 = pd.read_csv(fileKafkaArrival)
-
+# Section: Time Measurements & Results
+## subtract mqtt time with kafka arrivaltime
+res_mqtt_kafka = []
+for i in range(len(spark_start_time_in_ms)):
+    res_mqtt_kafka.append(spark_start_time_in_ms[i] - data_mqtt_ms[i])
+avg_mqtt_spark = mean(res_mqtt_kafka)
+print("Average of latency from MQTT > Kafka > Spark in ms = ", avg_mqtt_spark)
+print("Minimum latency from MQTT > Kafka > Spark in ms = ", min(res_mqtt_kafka))
+print("Maximum latency from MQTT > Kafka > Spark in ms = ", max(res_mqtt_kafka))
