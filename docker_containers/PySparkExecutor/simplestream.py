@@ -1,9 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql import functions as F
-import csv
-import datetime
-import pandas as pd
 
 # Kafka Parameters and Configs
 appNameKafka = "Testing the Stream with Kafka"
@@ -82,12 +79,11 @@ def stream_testing():
         .option("kafka.bootstrap.servers", "kafka:9092") \
         .option("topic", "12003800_test2") \
         .option("checkpointLocation", "/tmp") \
-        .start() \
-        .withColumn("current_timestamp", F.current_timestamp())
+        .start()
 
     
     print("++++++Select and Processing Section++++++")
-    # Measurment of KafkaQueueTS
+    # Measurement of KafkaQueueTS
     df_kafka_ts = df.selectExpr("CAST(topic as STRING)","CAST(value AS STRING)","CAST(current_timestamp AS Timestamp)")
 
     # Filter Data for Cassandra
