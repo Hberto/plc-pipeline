@@ -21,12 +21,27 @@ public class MeasurementTimestamp {
      * Puts header and Timestamp data into a csv file.
      * @param measurementTS the passed timestamp
      */
-    public static void measureMqttAndSaveToCSV(String csvFile, Timestamp measurementTS, int nr){
+    public static void measureMqttArrivalAndSaveToCSV(String csvFile, Timestamp measurementTS, int nr){
         long measureMilli = measurementTS.getTime();
         Date date = measurementTS;
 
         //String[] header = { "MQTTMeasurementNr", "Date", "ArrivalTimeInMS" };
         String[] data = {String.valueOf(nr), date.toString(), String.valueOf(measureMilli)};
+
+        //Writes data to the csv file
+        writeDataLineByLine(csvFile,data);
+    }
+
+    /**
+     * Puts header and Timestamp data into a csv file.
+     * @param measurementTS the passed timestamp
+     */
+    public static void measureKafkaArrivalAndSaveToCSV(String csvFile, Timestamp measurementTS){
+        long measureMilli = measurementTS.getTime();
+        Date date = measurementTS;
+
+        //String[] header = { "MQTTMeasurementNr", "Date", "ArrivalTimeInMS" };
+        String[] data = {date.toString(), String.valueOf(measureMilli)};
 
         //Writes data to the csv file
         writeDataLineByLine(csvFile,data);
