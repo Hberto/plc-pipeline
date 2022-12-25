@@ -56,7 +56,9 @@ public class StringConsumer {
         Date date = ts;
         System.out.println("++++++ARRIVAL FROM SPARK TS :"+ date.toString()
             + "\n\t"  
-            + "inMs: " + measureMilli);
+            + "inMs: " + measureMilli
+            + "\n\t" 
+            + "SIZE: " + record.serializedValueSize());
             //System.out.println("CONSUMER: "+ "Topic: " + record.topic() + "Timestamp in ms: " + record.timestamp() + "type:  "+record.timestampType());
             setRecordValue(record.value());
         } 
@@ -72,6 +74,8 @@ public class StringConsumer {
       props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+//      props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, "1000000"); //WORST
+      props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, "1"); //BEST + DEFAULT
 
       // Create the consumer using props
       Consumer<String, String> consumer = new KafkaConsumer<>(props);
