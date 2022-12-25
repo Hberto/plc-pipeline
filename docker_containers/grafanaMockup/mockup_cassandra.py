@@ -2,6 +2,7 @@ from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 import csv
 import datetime
+from statistics import mean
 
 # Measurement Variables
 header_mockup = ['CassandraReadTimeMeasureNr', 'TSDateformat', 'ClockTime1', 'ClockTime2', 'ReadTimeLong']
