@@ -35,9 +35,9 @@ public class ApplicationStarter {
         int min = 0;
         int max = 1000;
         while(true) {
-            int randomNu = (int)(Math.random()*(max-min+1)+min);  
+            int randomNu = (int)(Math.random()*(max-min+1)+min);
             prod.runProducerString("12003800_test", "test", String.valueOf(randomNu));
-            //cons.runConsumer();
+            cons.runConsumer();
             Thread.sleep(10000);
             //prod.getMetrics();
         }
