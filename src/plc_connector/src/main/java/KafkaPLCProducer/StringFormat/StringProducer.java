@@ -60,13 +60,12 @@ public class StringProducer {
 
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(topic, key,value);
-            Timestamp ts = new Timestamp(System.currentTimeMillis());
-            long measureMilli = ts.getTime();
-            Date date = ts;
-            System.out.println("++++++CURRENT TS FROM PRODUCER :"+ date.toString() + " inMs: " + measureMilli);
+            //Timestamp ts = new Timestamp(System.currentTimeMillis());
+            //long measureMilli = ts.getTime();
+            //Date date = ts;
+            //System.out.println("++++++CURRENT TS FROM PRODUCER :"+ date.toString() + " inMs: " + measureMilli);
             producer.send(record);
             producer.flush();
-            log.info("Producer sent record!");
         } catch (Exception e) {
             log.error("Exception at sending from Producer Operation");
             e.printStackTrace();
@@ -90,13 +89,13 @@ public class StringProducer {
 
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(topic,null,timestamp, key,value);
-             Timestamp ts = new Timestamp(System.currentTimeMillis());
-            long measureMilli = ts.getTime();
-            Date date = ts;
-            System.out.println("++++++CURRENT TS FROM PRODUCER :"+ date.toString() + " inMs: " + measureMilli);
+            //Timestamp ts = new Timestamp(System.currentTimeMillis());
+            //long measureMilli = ts.getTime();
+            //Date date = ts;
+            //System.out.println("++++++CURRENT TS FROM PRODUCER :"+ date.toString() + " inMs: " + measureMilli);
             producer.send(record);
             producer.flush();
-            log.info("Producer sent record!");
+            System.out.println("Producer sent record!");
         } catch (Exception e) {
             log.error("Exception at sending from Producer Operation");
             e.printStackTrace();
@@ -132,6 +131,12 @@ public class StringProducer {
             properties.put(ProducerConfig.CLIENT_ID_CONFIG, CLIENT_ID);
             properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
             properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+//            properties.put(ProducerConfig.BATCH_SIZE_CONFIG, "200000"); //WORST
+//            properties.put(ProducerConfig.LINGER_MS_CONFIG,"100");      //WORST
+//            properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG,"lz4"); //WORST
+//            properties.put(ProducerConfig.BATCH_SIZE_CONFIG, "10000"); //BEST
+//            properties.put(ProducerConfig.LINGER_MS_CONFIG,"0");      //BEST
+//            properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG,"none"); //BEST
             return new KafkaProducer<>(properties);
         }
 }
