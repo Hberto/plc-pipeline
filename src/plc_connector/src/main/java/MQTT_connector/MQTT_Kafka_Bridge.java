@@ -243,13 +243,13 @@ public class MQTT_Kafka_Bridge implements MqttCallback {
         String payload = new String (mqttMessage.getPayload(), StandardCharsets.UTF_8);
         String payload2 = String.valueOf(msgCount);
         int sizeMsg = mqttMessage.getPayload().length;
-        log.info("THE TOPIC:  " + topic
-                + "\n\t"
-                + "MESSAGE:  " + payload
-                + "\n\t"
-                + "TIMESTAMP:  " + new Timestamp(System.currentTimeMillis())
-                + "\n\t"
-                + "SIZE OF PAYLOAD:  " + sizeMsg);
+        //log.info("THE TOPIC:  " + topic
+        //        + "\n\t"
+        //        + "MESSAGE:  " + payload
+        //        + "\n\t"
+        //        + "TIMESTAMP:  " + new Timestamp(System.currentTimeMillis())
+        //        + "\n\t"
+        //        + "SIZE OF PAYLOAD:  " + sizeMsg);
 
         sendToKafka(topic, KEY,payload2,true, new Timestamp(System.currentTimeMillis()).getTime());
     }
