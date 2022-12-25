@@ -72,28 +72,25 @@ print(cassandra_writetime_station_in_ms)
 
 # Section: Time Measurements & Results
 ## subtract starttime with arrivaltime
-res_start_end = []
-for i in range(len(spark_start_time_in_ms)):
-    res_start_end.append(grafana_arrival_dates_in_ms[i] - (spark_start_time_in_ms[i]))
-avg_spark_grafana = mean(res_start_end)
-print("Average of latency from Spark > Cassandra in ms = ", avg_spark_grafana)
-print("Minimum latency from Spark > Grafana in ms = ", min(res_start_end))
-print("Maximum latency from Spark > Grafana in ms = ", max(res_start_end))
+#res_start_end = []
+#for i in range(len(spark_start_time_in_ms)):
+#    res_start_end.append(grafana_arrival_dates_in_ms[i] - (spark_start_time_in_ms[i]))
+#print("Average of latency from Spark > Cassandra in ms = ", mean(res_start_end))
+#print("Minimum latency from Spark > Grafana in ms = ", min(res_start_end))
+#print("Maximum latency from Spark > Grafana in ms = ", max(res_start_end))
 
 ## Subtract Time Spark -> Cassandra as Write Latency
 res_cassandra_spark = []
 for i in range(len(spark_start_time_in_ms)):
     res_cassandra_spark.append(cassandra_writetime_station_in_ms[i] - (spark_start_time_in_ms[i]))
-avg_spark_cassandra = mean(res_cassandra_spark)
-print("Average of latency from Spark > Cassandra in ms = ", avg_spark_cassandra)
+print("Average of latency from Spark > Cassandra in ms = ",  mean(res_cassandra_spark))
 print("Minimum latency from Spark > Cassandra in ms = ", min(res_cassandra_spark))
 print("Maximum latency from Spark > Cassandra in ms = ", max(res_cassandra_spark))
 
 ## Subtract Time Cassandra -> Grafana
-res_cassandra_grafana = []
-for i in range(len(spark_start_time_in_ms)):
-    res_cassandra_grafana.append(grafana_arrival_dates_in_ms[i] - (cassandra_writetime_station_in_ms[i]))
-avg_cassandra_grafana = mean(res_cassandra_grafana)
-print("Average of latency from Spark > Cassandra in ms = ", avg_cassandra_grafana)
-print("Minimum latency from Spark > Grafana in ms = ", min(res_cassandra_grafana))
-print("Maximum latency from Spark > Grafana in ms = ", max(res_cassandra_grafana)) 
+#res_cassandra_grafana = []
+#for i in range(len(spark_start_time_in_ms)):
+#    res_cassandra_grafana.append(grafana_arrival_dates_in_ms[i] - (cassandra_writetime_station_in_ms[i]))
+#print("Average of latency from Spark > Cassandra in ms = ", mean(res_cassandra_grafana))
+#print("Minimum latency from Spark > Grafana in ms = ", min(res_cassandra_grafana))
+#print("Maximum latency from Spark > Grafana in ms = ", max(res_cassandra_grafana)) 
