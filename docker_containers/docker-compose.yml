@@ -84,14 +84,35 @@ services:
     environment:
       SPARK_MODE: "worker"
       SPARK_MASTER_URL: "spark://spark-master:7077"
-      SPARK_WORKER_MEMORY: "4G"
-      SPARK_WORKER_CORES: "2"
+      SPARK_WORKER_MEMORY: "6G"
+      SPARK_WORKER_CORES: "4"
       SPARK_RPC_AUTHENTICATION_ENABLED: "no"
       SPARK_RPC_ENCRYPTION_ENABLED: "no"
       SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
       SPARK_SSL_ENABLED: "no"
     ports:
       - "8081:8081"
+    depends_on:
+      - "spark-master"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  spark-worker2:
+    image: docker.io/bitnami/spark:3
+    hostname: "worker2"
+    container_name: "worker2"
+    environment:
+      SPARK_MODE: "worker"
+      SPARK_MASTER_URL: "spark://spark-master:7077"
+      SPARK_WORKER_MEMORY: "6G"
+      SPARK_WORKER_CORES: "4"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "8082:8081"
     depends_on:
       - "spark-master"
     volumes:
@@ -112,15 +133,88 @@ services:
   
   # Setting up Big Data Store Cassandra
   cassandra:
-    image: cassandra:4
+    image: cassandra:4.0
     container_name: cassandra
     ports:
+      - "7000:7000"
       - "9042:9042"
     restart: "always"
     volumes:
       - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+
+  # Setting up Big Data Store Cassandra
+#  cassandra2:
+#    image: docker.io/bitnami/cassandra:4.0
+#    container_name: cassandra2
+#    ports:
+#      - "7001:7000"
+#      - "9043:9042"
+#    restart: "always"
+#    environment:
+#      - CASSANDRA_SEEDS=cassandra,cassandra2,cassandra3,cassandra4,cassandra5
+#      - CASSANDRA_CLUSTER_NAME=cassandra-cluster
+#      - MAX_HEAP_SIZE=2G
+#      - HEAP_NEWSIZE=200M
+#    volumes:
+#      - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
+#      - /etc/timezone:/etc/timezone:ro
+#      - /etc/localtime:/etc/localtime:ro
+#
+#  # Setting up Big Data Store Cassandra
+#  cassandra3:
+#    image: docker.io/bitnami/cassandra:4.0
+#    container_name: cassandra3
+#    ports:
+#      - "7002:7000"
+#      - "9044:9042"
+#    restart: "always"
+#    environment:
+#      - CASSANDRA_SEEDS=cassandra,cassandra2,cassandra3,cassandra4,cassandra5
+#      - CASSANDRA_CLUSTER_NAME=cassandra-cluster
+#      - MAX_HEAP_SIZE=2G
+#      - HEAP_NEWSIZE=200M
+#    volumes:
+#      - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
+#      - /etc/timezone:/etc/timezone:ro
+#      - /etc/localtime:/etc/localtime:ro
+#
+#  # Setting up Big Data Store Cassandra
+#  cassandra4:
+#    image: docker.io/bitnami/cassandra:4.0
+#    container_name: cassandra4
+#    ports:
+#      - "7003:7000"
+#      - "9045:9042"
+#    restart: "always"
+#    environment:
+#      - CASSANDRA_SEEDS=cassandra,cassandra2,cassandra3,cassandra4,cassandra5
+#      - CASSANDRA_CLUSTER_NAME=cassandra-cluster
+#      - MAX_HEAP_SIZE=2G
+#      - HEAP_NEWSIZE=200M
+#    volumes:
+#      - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
+#      - /etc/timezone:/etc/timezone:ro
+#      - /etc/localtime:/etc/localtime:ro
+#  
+#  # Setting up Big Data Store Cassandra
+#  cassandra5:
+#    image: docker.io/bitnami/cassandra:4.0
+#    container_name: cassandra5
+#    ports:
+#      - "7004:7000"
+#      - "9046:9042"
+#    restart: "always"
+#    environment:
+#      - CASSANDRA_SEEDS=cassandra,cassandra2,cassandra3,cassandra4,cassandra5
+#      - CASSANDRA_CLUSTER_NAME=cassandra-cluster
+#      - MAX_HEAP_SIZE=2G
+#      - HEAP_NEWSIZE=200M
+#    volumes:
+#      - ./Logs_and_Configs/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
+#      - /etc/timezone:/etc/timezone:ro
+#      - /etc/localtime:/etc/localtime:ro
 
   # Setting up Grafana as Monitoring tool for PLC Data
   grafana:
@@ -137,32 +231,33 @@ services:
     volumes:
       - ./Logs_and_Configs/Grafana:/var/log/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning/
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
   # Measure Read Latency of Cassandra to Cassandra Client Mockup as representing Grafana
-  grafana-mockup:
-    build:
-      context: ./grafanaMockup/
-      dockerfile: Dockerfile.grafanaMockUp 
-    container_name: grafanaMockUp
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+#  grafana-mockup:
+#    build:
+#      context: ./grafanaMockup/
+#      dockerfile: Dockerfile.grafanaMockUp 
+#    container_name: grafanaMockUp
+#    volumes:
+#      - /etc/timezone:/etc/timezone:ro
+#      - /etc/localtime:/etc/localtime:ro
 
   # Creating Tables and Keyspaces for Cassandra via SH Script
-  plc-data-cassandra:
-    build:
-      context: ./cassandraExecutor/
-      dockerfile: Dockerfile.cassandraexec
-    container_name: plc_data_cassandra
-    depends_on:
-      - cassandra
-    restart: "no"
-    entrypoint: ["/plc_data_cassandra.sh"]
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+#  plc-data-cassandra:
+#    build:
+#      context: ./cassandraExecutor/
+#      dockerfile: Dockerfile.cassandraexec
+#    container_name: plc_data_cassandra
+#    depends_on:
+#      - cassandra
+#    restart: "no"
+#    entrypoint: ["/plc_data_cassandra.sh"]
+#    volumes:
+#      - /etc/timezone:/etc/timezone:ro
+#      - /etc/localtime:/etc/localtime:ro
 
   # Mosquitto Broker
   mqtt_broker:
@@ -177,6 +272,15 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
+#  # Prometheus
+#  prometheus:
+#    image: docker.io/bitnami/prometheus:latest
+#    hostname: "prometheus"
+#    container_name: "prometheus"
+#    ports:
+#      - "9090:9090"
+#    volumes:
+#    - ./Logs_and_Configs/Prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
 
 volumes:
   grafana:
