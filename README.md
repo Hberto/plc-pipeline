@@ -20,6 +20,7 @@ The technical context shows that an industrial plant sends alarms, informations 
 ## Component Diagram
 The following Figure shows level 0 of the setup. On the left side is the PLC.
 On the right side is the data pipeline application. There is also a bidirectional data exchange.
+
 ![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/component_vogel.png)
 
 ### Level 1: Data pipeline application
@@ -74,7 +75,70 @@ can be set. It is the connection point to the MQTT broker of the open source ser
 
 
 ## Deployment
-ToDo
+The distribution view is divided into three parts: Data extraction, processing and visualisation. The views show the container network and the communication between the containers as well as the communication to the PLC.
+All containers in all distribution views are synchronised by the volumes with the clock of the server's clock.
+
+
+### Deployment: Data extraction
+
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/OS_Deployment_Extrahierung.png)
+
+The data extraction consists of the containers: Kafka, Eclipse Mosquitto, Kafdrop
+and Zookeeper. On the left is the PLC, which is connected to the server via the internet. A host IP is needed for the connection.
+The PLC is connected as an MQTT client with the MQTT broker via the host IP and port 1883 connected. The connection is unencrypted.
+
+The Java application running on the server is also connected as an MQTT client to the MQTT broker via port 1883. This sends the data to Kafka via the
+host IP and port 29092 to Kafka.
+
+Kafdrop is a monitoring tool for Kafka. It is connected to Kafka via port 9092 and hostname kafka. All messages from Kafka can be sent by specifying the host IP and port 9000 to be monitored remotely.
+
+Zookeeper is connected to Kafka via hostname zookeeper1 and port 2181.
+Kafka can be reached via ports 29092 and 9092. Kafka forwards the messages via
+the hostname kafka and port 9092 messages to the PySpark Executor.
+
+
+### Deployment: Data processing
+
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/OS_Deployment_Verarbeitung.png)
+
+The data processing consists of the containers: Spark Worker1, Cassandra1 and
+Spark Master.
+
+The PySpark Executor is connected to the KafkaContainer via the hostname kafka and port 9092. Furthermore, the PySpark Executor is connected to the database via the hostname cassandra hostname and port 9042. For the execution of the Spark jobs
+PySpark Executor is connected to the Spark master via the host spark-master and port 7077 connected. The PySpark Executor contains a Python script that is synchronised with the server via a Docker volume synchronised with the server. It downloads Jar packages. These contain
+dependencies and libraries to Cassandra, Spark and Kafka. The packages are used for
+the creation of the Spark session and for processing the data. During the
+execution of the Python script, streams are started. The streams are processed by the
+Spark Worker1 in parallel as a batch. Three streams are executed. One
+stream reads data from Kafka and adds timestamps. The data is stored in a
+dataframe. A data erasure operation is performed on the dataframe. The processed dataframe sends the data to Cassandra1 with a stream.
+to Cassandra1. Another stream sends data back to Kafka.
+
+The SparkWorker1 container is accessible on the Internet via the host IP and port 8081. Furthermore, SparkWorker1 is connected to the Spark Master via the hostname spark-master and port 7077. Any number of SparkWorker containers can be added.
+can be added. The limitation is the hardware of the server.
+
+The Spark Master can be reached on the Internet via the host IP and port 8080. The Spark
+Master terminates in cluster mode because Spark receives tasks from a Python script.
+script. The Spark history server can be reached on the Internet via the host IP and port 18080.
+It is a monitoring tool to observe details of resource consumption, Spark jobs, phases and tasks etc.
+The History Server collects data on Spark jobs via the Docker Volume data on Spark jobs from the PySpark Executor. The Spark Master is connected to the PySpark Executor via the hostname sparkmaster and port 7077. Spark can be configured via the Docker Volume spark-default.conf. The conguration
+specifies the location of the History Server data in this setup.
+
+The Cassandra Docker container is connected to the PySpark executor via the hostname cassandra and port 9042. It is also specified as the data source for data visualisation via the hostname cassandra and port 9042. Any number of Cassandra containers can be added. The restriction lies with the hardware of the server. Cassandra1 can be congured via the Docker volume cqlshrc.sample
+congurate.
+
+
+### Deployment: Data visualization
+
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/OS_Deployment_Visu.png)
+
+The data visualisation consists of the Grafana container, where the dashboard is accessible on the internet via the host IP and port 3000. 
+The Cassandra1 container is a data source. Both communicate via the host name cassandra and port 9042. With the help of
+queries, Grafana can query for data or SPS data at certain time intervals.
+The dashboard is permanently stored by Docker volume provisioning.
+Grafana is congured via the Docker volume grafana.ini.
+
+
 
 # Run Datapipeline
 ## Prerequisites
