@@ -11,10 +11,67 @@ The Use-Case for the application is predictive and preventive analysis and maint
 The goal is to build a data pipeline for plcs. It must be able to collect and analyze a large amount of data, such as alarms, inputs and outputs from industrial PLCs for example in power generation and power distribution systems. Since not all architecture goals can be achieved, the focus for the system architecture is on scalability and robustness.
 
 # Architecture
-![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/BA-GrobArchitektur.drawio.png)
+The following architecture of the prototype uses a Event-Driven SOA approach.
 
 ## Technical Context
-ToDo
+The technical context shows that an industrial plant sends alarms, informations of the sensors and actuators etc. to the system - the datapipeline prototype. The plc is located somewhere in the world and sends the data via internet to the system. Since its a scalabe system, other plcs can be also added as data sources. 
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/tech_kontext_open_source.png)
+
+## Component Diagram
+The following Figure shows level 0 of the setup. On the left side is the PLC.
+On the right side is the data pipeline application. There is also a bidirectional data exchange.
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/component_vogel.png)
+
+### Level 1: Data pipeline application
+The figure shows a deeper level of the open source data pipeline application.
+Level 1 shows the use of the APIs and the dependencies between the components. The components MQTT_Kafka_Bridge, Eclipse Mosquitto, Kafka, Spark, PySpark Executor, Cassandra, Grafana.
+
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/Component_OpenSource.png)
+
+**MQTT_Kafka_Bridge:** The component is responsible for the communication between the PLC and Kafka.
+PLC and Kafka. It is a bridge between MQTT and Kafka. It uses
+the Eclipse Paho API. With the help of the interface, an MQTT client is created and con-
+gurated. Methods for publishing and subscribing to MQTT messages are also used.
+are also used. For the experiment, messages from the PLC are forwarded to Kafka via the bridge. the bridge to Kafka. Furthermore, it also accepts messages from Kafka and sends them back to the PLC. 
+The component also uses the Kafka API. With the help of the interface, connections are made to Kafka, Kafka consumers and Kafka producers are created. Via the API, the consumers and producers are modified to measure latency.
+
+**Eclipse Mosquitto:** The component provides an MQTT broker for data exchange between PLC and open-source data pipeline. This enables
+component enables a PLC to be used as a data source.
+can be used.
+
+**Kafka:** The component provides a connection between the components MQTT_-.
+Kafka_Bridge, Kafka and PySpark Executor. On the one hand, Kafka forwards messages
+are forwarded to Spark. On the other hand, the PySpark Executor sends messages to Spark by using the
+data back to the MQTT_Kafka_Bridge by using the Spark-SQL-Kafka API.
+
+**PySpark Executor:** The component uses the Spark-SQL-Kafka API, Spark-CassandraConnector API and Spark Structured Streaming API from other components. By using Spark Structured Streaming API, there is a
+continuous stream of data that is processed per batch. It also sends data to Cassandra database.
+
+**Spark:** The component is connected to the PySpark Executor. It receives tasks from the PySpark Executor. The Spark Master assigns the tasks to Spark Workers to process per batch.
+
+**Cassandra:** The component receives data from the PySpark Executor. The data can be stored and queried by a plugin from Grafana. The database has a table for storing the data.
+
+**Grafana:** The component can query data from Cassandra via a plugin. Cassandra is entered as the data source.
+
+#### Class Diagram of MQTT_Kafka_Bridge component
+The Figure shows a deeper level of the MQTT_Kafka_Bridge component. It
+The classes MQTT_Kafka_Bridge.java, Kafka_StringConsumer.java, Application_pipeline.java, Kafka_StringProducer.java and the interface MqttCallback can be seen.
+
+![Architecture](https://github.com/Hberto/plc-pipeline/blob/main/images/cd%20mqtt_bridge.png)
+
+**MQTT_Kafka_Bridge.java** The class MQTT_Kafka_Bridge.java implements the methods of the Mqtt the methods of the MqttCallback interface and uses the Eclipse Mosquitto Paho API and the Kafka API.
+It is the MQTT client that receives the messages from the PLC and forwards them to Kafka. With each incoming message, a callback is invoked which
+is called, which forwards the message directly to Kafka. For this purpose, the Kafka_-
+StringProducer.java is used. The messages from the PySpark Executor are forwarded by the
+Kafka_StringConsumer.java and sent back to the PLC.
+
+**Application_pipeline.java** The class is the entry point. The host name and port
+can be set. It is the connection point to the MQTT broker of the open source server.
+
+**Kafka_StringConsumer.java** The class creates a Kafka consumer and connects to the Kafka broker.
+
+**Kafka_StringProducer.java** The class creates a Kafka producer and connects to the Kafka Broker.
+
 
 ## Deployment
 ToDo
