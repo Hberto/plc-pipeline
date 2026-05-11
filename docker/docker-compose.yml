@@ -1,0 +1,181 @@
+version: '3'
+
+services:
+
+  zookeeper:
+    image: "bitnami/zookeeper:latest"
+    container_name: zookeeper1
+    hostname: zookeeper1
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  kafdrop:
+    image: "obsidiandynamics/kafdrop"
+    container_name: kafdrop
+    hostname: kafdrop
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9092"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  kafka:
+    image: "bitnami/kafka:latest"
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_LISTENERS: "INTERNAL://:9092,EXTERNAL://:29092"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://${HOST_IP}:29092"
+      KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper1:2181"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    depends_on:
+      - zookeeper
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  spark-master:
+    build:
+      context: ./spark-master/
+      dockerfile: Dockerfile.sparkmaster
+    container_name: spark-master
+    environment:
+      SPARK_MODE: "master"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    user: root
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+      - "18080:18080"
+    volumes:
+      - ./config/Spark/historyServer:/opt/spark-events
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  spark-worker:
+    image: docker.io/bitnami/spark:3
+    hostname: worker1
+    container_name: worker1
+    environment:
+      SPARK_MODE: "worker"
+      SPARK_MASTER_URL: "spark://spark-master:7077"
+      SPARK_WORKER_MEMORY: "6G"
+      SPARK_WORKER_CORES: "4"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - spark-master
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  spark-worker2:
+    image: docker.io/bitnami/spark:3
+    hostname: worker2
+    container_name: worker2
+    environment:
+      SPARK_MODE: "worker"
+      SPARK_MASTER_URL: "spark://spark-master:7077"
+      SPARK_WORKER_MEMORY: "6G"
+      SPARK_WORKER_CORES: "4"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "8082:8081"
+    depends_on:
+      - spark-master
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  pyspark-executor:
+    build:
+      context: ./pyspark-executor/
+      dockerfile: Dockerfile.pysparkexec
+    container_name: executor
+    volumes:
+      - ./config/Spark/historyServer:/spark-events
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  cassandra:
+    image: cassandra:4.0
+    container_name: cassandra
+    ports:
+      - "7000:7000"
+      - "9042:9042"
+    restart: "always"
+    volumes:
+      - ./config/Cassandra/cqlshrc.sample:/home/.cassandra/cqlshrc
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  cassandra-init:
+    build:
+      context: ./cassandra-executor/
+      dockerfile: Dockerfile.cassandraexec
+    container_name: cassandra-init
+    depends_on:
+      - cassandra
+    entrypoint: ["/bin/bash", "/plc_data_cassandra.sh"]
+    restart: "no"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  grafana:
+    container_name: grafana
+    build:
+      context: ./grafana/
+      dockerfile: Dockerfile.grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_LOG_LEVEL: info
+      GF_LOG_MODE: console
+      GF_INSTALL_PLUGINS: "hadesarchitect-cassandra-datasource"
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:-changeme}
+      GF_SECURITY_SECRET_KEY: ${GF_SECURITY_SECRET_KEY}
+    volumes:
+      - ./config/Grafana:/var/log/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning/
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  mqtt-broker:
+    build:
+      context: ./mqtt-broker/
+      dockerfile: Dockerfile.mqtt
+    ports:
+      - "1883:1883"
+    container_name: mqtt-broker
+    volumes:
+      - ./mqtt-broker/log/:/mosquitto/log/
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+

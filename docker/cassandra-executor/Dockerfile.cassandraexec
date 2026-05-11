@@ -1,0 +1,2 @@
+FROM cassandra:4
+ADD  ./plc_data_cassandra.sh /plc_data_cassandra.sh

@@ -1,0 +1,2 @@
+FROM eclipse-mosquitto:latest
+ADD ./mosquitto.config /mosquitto/config/mosquitto.conf
